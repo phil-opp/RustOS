@@ -1,5 +1,5 @@
-CC=i386-elf-gcc
-LD=i386-elf-ld
+CC=i686-elf-gcc
+LD=i686-elf-ld
 RUSTC=rustc
 NASM=nasm
 QEMU=qemu-system-i386
@@ -13,10 +13,10 @@ all: floppy.img
 .PHONY: clean run
 
 .rs.o:
-	$(RUSTC) -O --target i386-intel-linux --crate-type lib -o $@ --emit obj $<
+	$(RUSTC) -g -O --target i386-intel-linux --crate-type lib -o $@ --emit obj $<
 
 .asm.o:
-	$(NASM) -f elf32 -o $@ $<
+	$(NASM) -g -f elf32 -o $@ $<
 
 floppy.img: loader.bin main.bin
 	cat $^ > $@
@@ -29,6 +29,9 @@ main.bin: linker.ld runtime.o main.o
 
 run: floppy.img
 	$(QEMU) -fda $<
+
+debug: floppy.img
+	$(QEMU) -S -gdb tcp::3334 -fda $<
 
 clean:
 	rm -f *.bin *.o *.img
