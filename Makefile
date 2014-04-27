@@ -3,7 +3,7 @@ RUSTC=rustc
 QEMU=qemu-system-i386
 AS=i686-elf-as
 
-all: floppy.img
+all: boot.bin
 
 .SUFFIXES:
 
@@ -17,17 +17,18 @@ all: floppy.img
 .s.o:
 	$(AS) -g -o $@ $<
 
-main.bin: linker.ld runtime.o main.o
-	$(LD) -g -o $@ -T $^
-
 run: boot.bin
 	$(QEMU) -kernel $<
 
 debug: boot.bin
 	$(QEMU) -S -gdb tcp::3334 -kernel $<
 
-boot.bin: linker.ld main.o boot.o runtime.o
+boot.bin: linker.ld main.o boot.o runtime.o idt.o interrupt.o vga.o
 	$(LD) -o $@ -T $^
+
+iso: boot.bin
+	cp boot.bin isodir/boot/
+	grub-mkrescue -o boot.iso isodir
 	
 clean:
 	rm -f *.bin *.o *.img *.iso
