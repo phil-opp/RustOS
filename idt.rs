@@ -1,10 +1,13 @@
 #![no_std]
+#![allow(ctypes)]
+
+mod vga;
 
 #[packed]
 struct IDTEntry {
   offset_lower: u16, // offset bits 0..15
   selector: u16, // a code segment selector in GDT or LDT
-  zero: u16,      // unused, set to 0
+  zero: u8,      // unused, set to 0
   type_attr: u8, // type and attributes, see below
   offset_upper: u16 // offset bits 16..31
 }
@@ -17,7 +20,7 @@ extern "rust-intrinsic" {
 
 extern "C" {
   fn disable_interrupts();
-  fn lidt(ptr: *IDTPointer);
+  fn lidt(ptr: *mut IDT);
   fn enable_interrupts();
 }
 
@@ -33,16 +36,9 @@ impl IDTEntry {
 }
 
 #[packed]
-struct IDTPointer {
+pub struct IDT {
   limit: u16,
   base: u32
-}
-
-#[packed]
-pub struct IDT {
-  pointer: *IDTPointer,
-  table: *IDTEntry,
-  size: u32
 }
 
 fn assert(b: bool) {
@@ -53,27 +49,27 @@ fn assert(b: bool) {
 
 impl IDT {
 
-  pub fn new(mem: *u8, size: u32) -> IDT {
-    //assert(size - (2 + 4) %);
+  pub fn new(mem: u32, size: u32) -> IDT {
     unsafe {
-      let ptr: *mut IDTPointer = transmute(mem);
-      (*ptr).limit = 256;
-      (*ptr).base = offset(mem, 6) as u32;
-      IDT { pointer: ptr as *IDTPointer, table: (offset(mem, 6) as *IDTEntry), size: size }
+      let ptr: *mut IDT = transmute(mem);
+      (*ptr).limit = (size * 8) as u16;
+      (*ptr).base = mem + 6;
+      *ptr
     }
   }
   
   pub fn add_entry(&mut self, index: u32, f: extern "C" fn() -> ()) {
-    assert(index < self.size);
+    assert(index < self.limit as u32);
     unsafe {
-      let e: *mut IDTEntry = offset(self.table, index as int) as *mut IDTEntry; 
+      let start: *IDTEntry = transmute(self.base);
+      let e: *mut IDTEntry = transmute(offset(start, index as int)); 
       *e = IDTEntry::new(f);
     }
   }
   
   pub fn enable(&mut self) {
     unsafe {
-      lidt(self.pointer);
+      lidt(self);
       enable_interrupts();
     }
   }

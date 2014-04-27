@@ -29,6 +29,9 @@ boot.bin: linker.ld main.o boot.o runtime.o idt.o interrupt.o vga.o
 iso: boot.bin
 	cp boot.bin isodir/boot/
 	grub-mkrescue -o boot.iso isodir
+
+vb: iso
+	virtualbox --debug --startvm rynux
 	
 clean:
 	rm -f *.bin *.o *.img *.iso

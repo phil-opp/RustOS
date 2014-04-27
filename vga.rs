@@ -9,12 +9,6 @@ extern "rust-intrinsic" {
     fn offset<T>(dst: *T, offset: int) -> *T;
 }
 
-extern "C" {
-  
-  fn abort() -> !;
-  
-}
-
 pub enum Color {
     Black      = 0,
     Blue       = 1,
@@ -43,14 +37,6 @@ pub struct Terminal {
     start: u32, // TODO should be generic pointer
     max: Point,
     current: Point,
-}
-
-#[inline]
-#[lang="fail_"]
-pub fn fail_(_: *u8, _: *u8, _: uint) -> ! {
-    unsafe {
-      abort()
-    }
 }
 
 impl Terminal {
@@ -131,7 +117,7 @@ fn wtoc(i: u32) -> (u8, u8, u8, u8, u8, u8, u8, u8) {
   let (e, f) = itoc(((i & 0xff0000) >> 16) as u8);
   let (g, h) = itoc(((i & 0xff000000) >> 24) as u8);
   
-  (a, b, c, d, e, f, g, h)
+  (g, h, e, f, c, d, a, b) // TODO(ryan): why is it big endian?
 }
 
 fn hex(i: u8) -> u8 {
