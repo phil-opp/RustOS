@@ -97,6 +97,9 @@ impl Terminal {
   pub fn println(&mut self, s:  &'static str) {
     self.print(s);
     self.put_char('\n' as u8);
+    //for c in s {
+    //  self.put_char(s);
+    //}
   }
   
   pub fn new(start: u32, x: u32, y: u32) -> Terminal {

@@ -5,18 +5,19 @@ AS=i686-elf-as
 
 all: boot.bin
 
-.SUFFIXES:
-
 .SUFFIXES: .o .rs .s
 
 .PHONY: clean run
 
 .rs.o:
-	$(RUSTC) -g -O --target i386-intel-linux --crate-type lib -o $@ --emit obj $<
+	$(RUSTC) -g -O --target i386-intel-linux --crate-type lib -o $@ --emit obj $< -L .
 
 .s.o:
 	$(AS) -g -o $@ $<
 
+core: rust-core/core/lib.rs
+	rustc --crate-type=lib -C passes=inline $<
+	
 run: boot.bin
 	$(QEMU) -kernel $<
 

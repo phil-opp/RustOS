@@ -1,25 +1,25 @@
 #![no_std]
 #![allow(ctypes)]
-
+extern crate core;
+use core::ptr;
+use multiboot::multiboot_info;
 mod idt;
 mod vga;
+mod multiboot;
+mod gdt;
 
-#[inline]
-#[lang="fail_"]
-pub fn fail_(_: *u8, _: *u8, _: uint) -> ! {
-    unsafe {
-      abort()
-    }
-}
-
-extern "C" {
+extern {
   
   fn abort() -> !;
+  
+  fn test();
+  
+  fn interrupt();
   
 }
 
 extern "rust-intrinsic" {
-    pub fn transmute<T, U>(x: T) -> U;
+  pub fn transmute<T, U>(x: T) -> U;
 }
 
 pub fn panic() {
@@ -28,9 +28,10 @@ pub fn panic() {
   }
 }
 
-extern "C" fn callback() {
+#[no_mangle]
+pub extern "C" fn callback() {
   unsafe {
-    ::vga::TERMINAL.println("its an interrupt!");
+    ::vga::TERMINAL.print("its an interrupt!");
   }
 }
 
@@ -41,28 +42,45 @@ fn float_to_int(x: f32) -> u32 {
   }
 }
 
+fn identity_map(mut gdt: gdt::GDT) {
+  gdt.add_entry(0, 0, 0);                     // Selector 0x00 cannot be used
+  gdt.add_entry(0, 0xffffffff, 0x9A);         // Selector 0x08 will be our code
+  gdt.add_entry(0, 0xffffffff, 0x92);         // Selector 0x10 will be our data
+  //gdt.add_entry( = {.base=&myTss, .limit=sizeof(myTss), .type=0x89}; // You can use LTR(0x18)
+}
 
 #[no_mangle]
-pub unsafe fn main() {
+pub extern "C" fn main(magic: u32, info: *multiboot_info) {
+  unsafe {
     vga::clear_screen(::vga::Black);
     vga::TERMINAL = vga::Terminal::new(0xb8000, 160, 24);
     
-    vga::TERMINAL.println("hello, world");
-    vga::TERMINAL.print("behold a kernel! and here is float division: ");
-    vga::TERMINAL.put_int(float_to_int(10.0 / 4.0));
-    vga::TERMINAL.println("");
+    if magic != multiboot::MULTIBOOT_BOOTLOADER_MAGIC {
+      vga::TERMINAL.println("no good!");
+    } else {
+      vga::TERMINAL.println("valid header!");
+      vga::TERMINAL.put_int(info as u32);
+      (*info).multiboot_stuff();
+    }
     
-    let mut idt = ::idt::IDT::new(0xb900, 0x400);
+    let mut gdt = ::gdt::GDT::new(0x100000*11, 0x18);
+    identity_map(gdt);
+    gdt.enable();
+    
+    vga::TERMINAL.println("");
+    let mut idt = ::idt::IDT::new(0x100000*10, 0x400);
     let mut i = 0;
     
-    vga::TERMINAL.print("callback bytes: ");
-    vga::TERMINAL.put_int(callback as u32);
-    
     while i < 0x400 {
-      idt.add_entry(i, callback);
+      idt.add_entry(i, test);
       i += 1;
+      
     }
+    
     idt.enable();
     
+    interrupt();
+    vga::TERMINAL.println("and, we're back");
     loop { }
+  }
 }

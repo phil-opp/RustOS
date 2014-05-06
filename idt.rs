@@ -26,7 +26,7 @@ extern "C" {
 
 impl IDTEntry {
   
-  fn new(f: extern "C" fn() -> ()) -> IDTEntry {
+  fn new(f: extern "C" unsafe fn() -> ()) -> IDTEntry {
     unsafe {
       let (lower, upper): (u16, u16) = transmute(f);
       IDTEntry { offset_lower: lower, selector: 0x08, zero: 0, type_attr: 0x8E, offset_upper: upper }
@@ -43,22 +43,19 @@ pub struct IDT {
 
 fn assert(b: bool) {
   if !b {
-    //::main::panic();
+    // TODO(ryan) implement
   }
 }
 
 impl IDT {
 
-  pub fn new(mem: u32, size: u32) -> IDT {
+  pub fn new(mem: u32, size: u16) -> IDT {
     unsafe {
-      let ptr: *mut IDT = transmute(mem);
-      (*ptr).limit = (size * 8) as u16;
-      (*ptr).base = mem + 6;
-      *ptr
+      IDT {limit: size * 8, base: mem + 6 }
     }
   }
   
-  pub fn add_entry(&mut self, index: u32, f: extern "C" fn() -> ()) {
+  pub fn add_entry(&mut self, index: u32, f: extern "C" unsafe fn() -> ()) {
     assert(index < self.limit as u32);
     unsafe {
       let start: *IDTEntry = transmute(self.base);
@@ -74,5 +71,4 @@ impl IDT {
     }
   }
  
-
 }
