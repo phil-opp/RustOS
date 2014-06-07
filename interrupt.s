@@ -35,4 +35,5 @@ disable_interrupts:
 # u8 -> ()
 interrupt:
   int $1
+  ret
   

@@ -5,18 +5,21 @@ AS=i686-elf-as
 
 all: boot.bin
 
-.SUFFIXES: .o .rs .s
+.SUFFIXES: .o .s
 
 .PHONY: clean run
-
-.rs.o:
-	$(RUSTC) -g -O --target i386-intel-linux --crate-type lib -o $@ --emit obj $< -L .
 
 .s.o:
 	$(AS) -g -o $@ $<
 
+main.o: core main.rs
+	$(RUSTC) -g -O --target i386-intel-linux --crate-type lib -o main.o --emit obj main.rs -L . -Z no-landing-pads
+
+support.o: rust-core/support.rs
+	$(RUSTC) -g -O --target i386-intel-linux --crate-type lib -o support.o --emit obj $< -L . -Z no-landing-pads
+	
 core: rust-core/core/lib.rs
-	rustc --crate-type=lib -C passes=inline $<
+	$(RUSTC) -g --crate-type=lib -C passes=inline $<  -Z no-landing-pads
 	
 run: boot.bin
 	$(QEMU) -kernel $<
@@ -24,7 +27,7 @@ run: boot.bin
 debug: boot.bin
 	$(QEMU) -S -gdb tcp::3334 -kernel $<
 
-boot.bin: linker.ld main.o boot.o runtime.o idt.o interrupt.o vga.o
+boot.bin: linker.ld main.o boot.o runtime.o interrupt.o support.o
 	$(LD) -o $@ -T $^
 
 iso: boot.bin
@@ -35,4 +38,4 @@ vb: iso
 	virtualbox --debug --startvm rynux
 	
 clean:
-	rm -f *.bin *.o *.img *.iso
+	rm -f *.bin *.o *.img *.iso *.rlib

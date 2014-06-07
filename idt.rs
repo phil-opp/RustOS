@@ -50,9 +50,7 @@ fn assert(b: bool) {
 impl IDT {
 
   pub fn new(mem: u32, size: u16) -> IDT {
-    unsafe {
-      IDT {limit: size * 8, base: mem + 6 }
-    }
+    IDT {limit: size * 8, base: mem + 6 }
   }
   
   pub fn add_entry(&mut self, index: u32, f: extern "C" unsafe fn() -> ()) {

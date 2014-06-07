@@ -1,24 +1,10 @@
 .global __morestack
-.global abort
 .global memcmp
 .global memcpy
-.global malloc
-.global free
 
 __morestack:
-
-abort:
-    jmp abort
+    jmp __morestack
 
 memcmp:
     jmp memcmp
-
-memcpy:
-    jmp memcpy
-
-malloc:
-    jmp malloc
-
-free:
-    jmp free
     
