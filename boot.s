@@ -36,7 +36,7 @@ _start:
 	# our stack (as it grows downwards).
 	movl $stack_top, %esp
 
-	movl $0, %gs:0x30
+	movl $0, %gs:0x30 # needed for rust
 	# We are now ready to actually execute C code. We cannot embed that in an
 	# assembly file, so we'll create a kernel.c file in a moment. In that file,
 	# we'll create a C entry point called kernel_main and call it here.
