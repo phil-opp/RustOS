@@ -27,7 +27,7 @@ run: boot.bin
 debug: boot.bin
 	$(QEMU) -S -gdb tcp::3334 -kernel $<
 
-boot.bin: linker.ld main.o boot.o runtime.o interrupt.o support.o
+boot.bin: linker.ld main.o boot.o interrupt.o support.o
 	$(LD) -o $@ -T $^
 
 iso: boot.bin

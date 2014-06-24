@@ -159,3 +159,13 @@ pub extern "C" fn free(ptr: *u8) {
 pub extern "C" fn realloc(ptr: *u8, size: uint) -> *u8 {
   allocator::realloc(ptr, size)
 }
+
+#[no_mangle]
+pub extern "C" fn __morestack() {
+  loop { } //TODO(ryan) should I do anything here?
+}
+
+#[no_mangle]
+pub extern "C" fn memcmp() {
+  loop { } //TODO(ryan) should I do anything here?
+}
