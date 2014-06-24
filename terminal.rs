@@ -1,7 +1,8 @@
 #![no_std]
 #![allow(ctypes)]
+use arch::vga;
 
-pub static mut TERMINAL: Terminal = Terminal { start: 0, max: Point { x: 0, y: 0 }, current: Point { x: 0, y: 0 } };
+mod arch;
 
 extern "rust-intrinsic" {
     pub fn transmute<T, U>(x: T) -> U;
@@ -9,38 +10,23 @@ extern "rust-intrinsic" {
     fn offset<T>(dst: *T, offset: int) -> *T;
 }
 
-pub enum Color {
-    Black      = 0,
-    Blue       = 1,
-    Green      = 2,
-    Cyan       = 3,
-    Red        = 4,
-    Pink       = 5,
-    Brown      = 6,
-    LightGray  = 7,
-    DarkGray   = 8,
-    LightBlue  = 9,
-    LightGreen = 10,
-    LightCyan  = 11,
-    LightRed   = 12,
-    LightPink  = 13,
-    Yellow     = 14,
-    White      = 15,
-}
-
 struct Point {
-    x: u32,
-    y: u32
+    x: uint,
+    y: uint
 }
 
 pub struct Terminal {
-    start: u32, // TODO should be generic pointer
     max: Point,
     current: Point,
+    vga: vga::VGA
 }
 
 impl Terminal {
 
+  pub fn new(vga: vga::VGA) -> Terminal {
+    let (x, y) = (vga.x_max(), vga.y_max());
+    Terminal { vga: vga, max: Point {x: x, y: y}, current: Point {x: 0, y: 0} }
+  }
 
   pub fn put_char(&mut self, c: u8) {
     if c == '\n' as u8 {
@@ -50,12 +36,19 @@ impl Terminal {
 	self.current = match self.current {
 	  Point { x: x, y: y }  if x == self.max.x - 1 && y == self.max.y - 1  => Point {x: 0, y: 0},
 	  Point { y: y, ..} if y == self.max.y - 1 => Point { x: 0, y: y + 1 },
-	  Point { x: x, y: y } => Point { x: x + 1 * 2, y: y } // TODO sizeof
+	  Point { x: x, y: y } => Point { x: x + 1, y: y }
 	};
-	let entry = make_vgaentry(c, make_color(White, Black));
-	*((self.start + self.current.y * self.max.x + self.current.x) as *mut u16) = entry;
+	self.vga.put((self.current.x, self.current.y), c, vga::White, vga::Black);
       }
     }
+  }
+  
+  pub fn clear_screen(&mut self) {
+    range(0, self.max.x, |i| {
+	range(0, self.max.y, |j| {
+	  self.vga.put((i, j), 0 as u8, vga::Black, vga::Black);
+	});
+    });
   }
   
   pub fn put_hex(&mut self, c: u8) {
@@ -102,10 +95,6 @@ impl Terminal {
     //}
   }
   
-  pub fn new(start: u32, x: u32, y: u32) -> Terminal {
-    Terminal { start: start, max: Point { x: x, y: y}, current: Point { x: 0, y: 0 } }
-  }
-
 }
 
 fn itoc(i: u8) -> (u8, u8) {
@@ -131,16 +120,6 @@ fn hex(i: u8) -> u8 {
   }
 }
 
-fn make_color(fg: Color, bg: Color) -> u8 {
-  (fg as u8) | (bg as u8) << 4
-}
-
-fn make_vgaentry(c: u8, color_entry: u8) -> u16{
-  let c8: u8 = c as u8;
-  let c16: u16 = c8 as u16;
-  let color16: u16 = color_entry as u16;
-  c16 | color16 << 8
-}
 
 
 fn range(lo: uint, hi: uint, it: |uint| -> ()) {
@@ -152,8 +131,8 @@ fn range(lo: uint, hi: uint, it: |uint| -> ()) {
 }
 
 
-pub unsafe fn clear_screen(background: Color) {
+pub unsafe fn clear_screen() {
     range(0, 80*25, |i| {
-	*((0xb8000 + i * 2) as *mut u16) = (background as u16) << 12;
+	*((0xb8000 + i * 2) as *mut u16) = (0 as u16) << 12;
     });
 }

@@ -13,7 +13,7 @@ all: boot.bin
 	$(AS) -g -o $@ $<
 
 main.o: core main.rs
-	$(RUSTC) -g -O --target i386-intel-linux --crate-type lib -o main.o --emit obj main.rs -L . -Z no-landing-pads
+	$(RUSTC) -g -O --cfg x86_32 --target i386-intel-linux --crate-type lib -o main.o --emit obj main.rs -L . -Z no-landing-pads
 
 support.o: rust-core/support.rs
 	$(RUSTC) -g -O --target i386-intel-linux --crate-type lib -o support.o --emit obj $< -L . -Z no-landing-pads

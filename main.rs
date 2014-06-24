@@ -9,8 +9,14 @@ use core::option::Some;
 use multiboot::multiboot_info;
 use allocator::set_allocator;
 use allocator::get_allocator;
+use panic::print;
+use terminal::Terminal;
+use arch::vga;
+
+mod arch;
 mod idt;
-mod vga;
+mod terminal;
+mod panic;
 mod multiboot;
 mod gdt;
 mod allocator;
@@ -27,16 +33,11 @@ extern "rust-intrinsic" {
   pub fn transmute<T, U>(x: T) -> U;
 }
 
-pub fn panic() {
-  unsafe {
-    ::vga::TERMINAL.println("panic!");
-  }
-}
 
 #[no_mangle]
 pub extern "C" fn callback() {
   unsafe {
-    ::vga::TERMINAL.print("its an interrupt!");
+    print("its an interrupt!");
   }
 }
 
@@ -54,16 +55,16 @@ fn identity_map(mut gdt: gdt::GDT) {
   //gdt.add_entry( = {.base=&myTss, .limit=sizeof(myTss), .type=0x89}; // You can use LTR(0x18)
 }
 
-unsafe fn vstuff() {
+unsafe fn vstuff(mut terminal: Terminal) {
   let mut v = vec::Vec::new();
   //loop{};
   
-  vga::TERMINAL.println("in vstuff");
+  terminal.println("in vstuff");
   v.push("hello from a vector!");
-  vga::TERMINAL.println("pushed workded");
+  terminal.println("pushed workded");
   match v.pop() {
-    Some(string) => vga::TERMINAL.println(string),
-    None => vga::TERMINAL.println("uh oh!")
+    Some(string) => terminal.println(string),
+    None => terminal.println("uh oh!")
   }
 
 }
@@ -71,23 +72,25 @@ unsafe fn vstuff() {
 #[no_mangle]
 pub extern "C" fn abort() {
   unsafe {
-    vga::TERMINAL.println("kernel panic! (from abort())");
+    panic::abort();
   }
-  loop {}
 }
 
 
 #[no_mangle]
 pub extern "C" fn main(magic: u32, info: *multiboot_info) {
+  go(magic, info, Terminal::new(vga::VGA::new()));
+}
+  
+fn go(magic: u32, info: *multiboot_info, mut terminal: Terminal) {
   unsafe {
-    vga::clear_screen(::vga::Black);
-    vga::TERMINAL = vga::Terminal::new(0xb8000, 160, 24);
+    terminal.clear_screen();
         
     if magic != multiboot::MULTIBOOT_BOOTLOADER_MAGIC {
-      vga::TERMINAL.println("no good!");
+      terminal.println("no good!");
     } else {
-      vga::TERMINAL.println("valid header!");
-      vga::TERMINAL.put_int(info as u32);
+      terminal.println("valid header!");
+      terminal.put_int(info as u32);
       //(*info).multiboot_stuff();
     }
     
@@ -100,29 +103,29 @@ pub extern "C" fn main(magic: u32, info: *multiboot_info) {
     let alloc = get_allocator();
     
     let (_, size) = alloc.debug();
-    vga::TERMINAL.print("size of allocator is: ");
-    vga::TERMINAL.put_int(size as u32);
-    vga::TERMINAL.println("");
+    terminal.print("size of allocator is: ");
+    terminal.put_int(size as u32);
+    terminal.println("");
     match alloc.allocate(10) {
-      Some(_) => vga::TERMINAL.print("got mem\n"),
-      None => vga::TERMINAL.print("allocator failed")
+      Some(_) => terminal.print("got mem\n"),
+      None => terminal.print("allocator failed")
     }
     
     
     match alloc.allocate(10) {
-      Some(mem) => vga::TERMINAL.put_int(mem as u32),
-      None => vga::TERMINAL.println("allocator failed")
+      Some(mem) => terminal.put_int(mem as u32),
+      None => terminal.println("allocator failed")
     }
-        vga::TERMINAL.println("");
+        terminal.println("");
 
-    vga::TERMINAL.put_int(realloc(1 as *u8, 10) as u32);
-    vga::TERMINAL.put_int(allocator::realloc(1 as *u8, 10) as u32);
+    terminal.put_int(realloc(1 as *u8, 10) as u32);
+    terminal.put_int(allocator::realloc(1 as *u8, 10) as u32);
     
     
-    vstuff();
+    vstuff(terminal);
     
     
-    vga::TERMINAL.println("");
+    terminal.println("");
     
     let mut idt = ::idt::IDT::new(0x100000*10, 0x400);
     let mut i = 0;
@@ -138,7 +141,7 @@ pub extern "C" fn main(magic: u32, info: *multiboot_info) {
     
     interrupt();
     
-    vga::TERMINAL.println("and, we're back");
+    terminal.println("and, we're back");
     
     loop { }
   }

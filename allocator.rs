@@ -3,8 +3,8 @@ extern crate core;
 use core::option::Option;
 use core::option::None;
 use core::option::Some;
-use vga::TERMINAL;
-mod vga;
+use panic::print;
+mod panic;
 
 static mut allocator: GoodEnoughForNow = GoodEnoughForNow {current: 0 as *u8, size: 0};
 
@@ -48,7 +48,7 @@ impl Allocator for GoodEnoughForNow {
   fn allocate(&mut self, size: uint) -> Option<*u8> {
     if size >= self.size { //TODO(ryan) overflow
       //loop{}
-      unsafe {TERMINAL.println("no mem left :("); }
+      unsafe {print("no mem left :("); }
       None
     } else {
       let ptr = self.current;
@@ -69,7 +69,7 @@ impl Allocator for GoodEnoughForNow {
 }
 
 pub fn malloc(size: uint) -> *u8 {
-  unsafe { vga::TERMINAL.println("mallocing..."); }
+  unsafe { print("mallocing..."); }
   unsafe {
     match allocator.allocate(size) {
     Some(ptr) => ptr,
@@ -79,7 +79,7 @@ pub fn malloc(size: uint) -> *u8 {
 }
 
 pub fn free(ptr: *u8) {
-  unsafe { vga::TERMINAL.println("freeing..."); }
+  unsafe { print("freeing..."); }
   unsafe {
     allocator.free(ptr)
   }
@@ -91,7 +91,7 @@ extern "C" {
 
 pub fn realloc(old: *u8, size: uint) -> *u8 {
   //loop{}
-  unsafe { vga::TERMINAL.println("reallocing..."); }
+  unsafe { print("reallocing..."); }
   let new = malloc(size);
   unsafe { memmove(new, old, size as int); } //TODO(ryan): size may be too large
   new

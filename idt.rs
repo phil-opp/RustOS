@@ -1,8 +1,6 @@
 #![no_std]
 #![allow(ctypes)]
 
-mod vga;
-
 #[packed]
 struct IDTEntry {
   offset_lower: u16, // offset bits 0..15
