@@ -1,5 +1,3 @@
-#![no_std]
-#![allow(ctypes)]
 
 #[packed]
 struct IDTEntry {

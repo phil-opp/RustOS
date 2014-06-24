@@ -1,9 +1,7 @@
 #![no_std]
 #![allow(ctypes)]
 extern crate core;
-use core::ptr;
 use core::vec;
-use core::option::Option;
 use core::option::None;
 use core::option::Some;
 use multiboot::multiboot_info;

@@ -1,5 +1,3 @@
-#![no_std]
-#![allow(ctypes)]
 use arch::vga;
 
 mod arch;
@@ -32,14 +30,12 @@ impl Terminal {
     if c == '\n' as u8 {
       self.current = Point { x : 0, y : (self.current.y + 1) };
     } else {
-      unsafe {
-	self.current = match self.current {
-	  Point { x: x, y: y }  if x == self.max.x - 1 && y == self.max.y - 1  => Point {x: 0, y: 0},
-	  Point { y: y, ..} if y == self.max.y - 1 => Point { x: 0, y: y + 1 },
-	  Point { x: x, y: y } => Point { x: x + 1, y: y }
-	};
-	self.vga.put((self.current.x, self.current.y), c, vga::White, vga::Black);
-      }
+      self.current = match self.current {
+	Point { x: x, y: y }  if x == self.max.x - 1 && y == self.max.y - 1  => Point {x: 0, y: 0},
+	Point { y: y, ..} if y == self.max.y - 1 => Point { x: 0, y: y + 1 },
+	Point { x: x, y: y } => Point { x: x + 1, y: y }
+      };
+      self.vga.put((self.current.x, self.current.y), c, vga::White, vga::Black);
     }
   }
   
@@ -120,19 +116,10 @@ fn hex(i: u8) -> u8 {
   }
 }
 
-
-
 fn range(lo: uint, hi: uint, it: |uint| -> ()) {
     let mut iter = lo;
     while iter < hi {
 	it(iter);
 	iter += 1;
     }
-}
-
-
-pub unsafe fn clear_screen() {
-    range(0, 80*25, |i| {
-	*((0xb8000 + i * 2) as *mut u16) = (0 as u16) << 12;
-    });
 }
