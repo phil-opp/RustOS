@@ -1,8 +1,8 @@
 extern crate core;
 use core::ptr::offset_mut;
 
-static VGA_START: *u16 = 0xb8000 as *u16;
-static VGA_MAX: (uint, uint) = (80, 24);
+pub static VGA_START: *u16 = 0xb8000 as *u16; // TODO(ryan) this shouldn't be exposed
+pub static VGA_MAX: (uint, uint) = (80, 24);
 
 pub enum Color {
     Black      = 0,
@@ -23,13 +23,14 @@ pub enum Color {
     White      = 15,
 }
 
-pub struct VGA {
-  mapped: *u16,
-  max: (uint, uint)
+pub struct VGA { // TODO(ryan) struct fields shouldn't be exposed
+  pub mapped: *u16,
+  pub max: (uint, uint)
 }
 
 impl VGA {
 
+  #[inline(always)]
   pub fn new() -> VGA {
     VGA { mapped: VGA_START, max: VGA_MAX }
   }

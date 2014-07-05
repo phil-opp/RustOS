@@ -2,6 +2,9 @@ use arch::vga;
 
 mod arch;
 
+// TODO(ryan): next line is breaking abstractions (but can't find a nice way to init it...)
+pub static mut TERMINAL: Terminal = Terminal { vga: vga::VGA { mapped: vga::VGA_START, max: vga::VGA_MAX }, current: Point {x: 0, y: 0} };
+
 extern "rust-intrinsic" {
     pub fn transmute<T, U>(x: T) -> U;
 
@@ -14,34 +17,42 @@ struct Point {
 }
 
 pub struct Terminal {
-    max: Point,
     current: Point,
     vga: vga::VGA
 }
 
 impl Terminal {
 
+  #[inline(always)]
+  pub fn init() -> Terminal {
+    Terminal::new(vga::VGA::new())
+  }
+
   pub fn new(vga: vga::VGA) -> Terminal {
     let (x, y) = (vga.x_max(), vga.y_max());
-    Terminal { vga: vga, max: Point {x: x, y: y}, current: Point {x: 0, y: 0} }
+    Terminal { vga: vga, current: Point {x: 0, y: 0} }
   }
 
   pub fn put_char(&mut self, c: u8) {
     if c == '\n' as u8 {
       self.current = Point { x : 0, y : (self.current.y + 1) };
     } else {
-      self.current = match self.current {
-	Point { x: x, y: y }  if x == self.max.x - 1 && y == self.max.y - 1  => Point {x: 0, y: 0},
-	Point { y: y, ..} if y == self.max.y - 1 => Point { x: 0, y: y + 1 },
-	Point { x: x, y: y } => Point { x: x + 1, y: y }
-      };
       self.vga.put((self.current.x, self.current.y), c, vga::White, vga::Black);
+    }
+    
+    self.current.x += 1;
+    if self.current.x >= self.vga.x_max() {
+      self.current.x = 0;
+      self.current.y += 1;
+    }
+    if self.current.y >= self.vga.y_max() {
+      self.current.y = 0;
     }
   }
   
   pub fn clear_screen(&mut self) {
-    range(0, self.max.x, |i| {
-	range(0, self.max.y, |j| {
+    range(0, self.vga.x_max(), |i| {
+	range(0, self.vga.y_max(), |j| {
 	  self.vga.put((i, j), 0 as u8, vga::Black, vga::Black);
 	});
     });

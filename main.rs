@@ -10,6 +10,7 @@ use allocator::get_allocator;
 use panic::print;
 use terminal::Terminal;
 use arch::vga;
+use panic::{print, println, put_int};
 
 mod arch;
 mod idt;
@@ -53,16 +54,16 @@ fn identity_map(mut gdt: gdt::GDT) {
   //gdt.add_entry( = {.base=&myTss, .limit=sizeof(myTss), .type=0x89}; // You can use LTR(0x18)
 }
 
-unsafe fn vstuff(mut terminal: Terminal) {
+unsafe fn vstuff() {
   let mut v = vec::Vec::new();
   //loop{};
   
-  terminal.println("in vstuff");
+  println("in vstuff");
   v.push("hello from a vector!");
-  terminal.println("pushed workded");
+  println("pushed workded");
   match v.pop() {
-    Some(string) => terminal.println(string),
-    None => terminal.println("uh oh!")
+    Some(string) => println(string),
+    None => println("uh oh!")
   }
 
 }
@@ -77,20 +78,20 @@ pub extern "C" fn abort() {
 
 #[no_mangle]
 pub extern "C" fn main(magic: u32, info: *multiboot_info) {
-  go(magic, info, Terminal::new(vga::VGA::new()));
-}
   
-fn go(magic: u32, info: *multiboot_info, mut terminal: Terminal) {
+  panic::init();
   unsafe {
-    terminal.clear_screen();
-        
+    println("hiiii");
+    println("bye");
+    
     if magic != multiboot::MULTIBOOT_BOOTLOADER_MAGIC {
-      terminal.println("no good!");
+      println("no good!");
     } else {
-      terminal.println("valid header!");
-      terminal.put_int(info as u32);
-      //(*info).multiboot_stuff();
+      println("valid header!");
+      put_int(info as u32);
+      (*info).multiboot_stuff();
     }
+    
     
     let mut gdt = ::gdt::GDT::new(0x100000*11, 0x18);
     identity_map(gdt);
@@ -98,32 +99,10 @@ fn go(magic: u32, info: *multiboot_info, mut terminal: Terminal) {
 
     set_allocator((0x100000*12) as *u8, 0x1c9c380 as *u8);
     
-    let alloc = get_allocator();
-    
-    let (_, size) = alloc.debug();
-    terminal.print("size of allocator is: ");
-    terminal.put_int(size as u32);
-    terminal.println("");
-    match alloc.allocate(10) {
-      Some(_) => terminal.print("got mem\n"),
-      None => terminal.print("allocator failed")
-    }
+    vstuff();
     
     
-    match alloc.allocate(10) {
-      Some(mem) => terminal.put_int(mem as u32),
-      None => terminal.println("allocator failed")
-    }
-        terminal.println("");
-
-    terminal.put_int(realloc(1 as *u8, 10) as u32);
-    terminal.put_int(allocator::realloc(1 as *u8, 10) as u32);
-    
-    
-    vstuff(terminal);
-    
-    
-    terminal.println("");
+    println("");
     
     let mut idt = ::idt::IDT::new(0x100000*10, 0x400);
     let mut i = 0;
@@ -134,12 +113,9 @@ fn go(magic: u32, info: *multiboot_info, mut terminal: Terminal) {
       
     }
     
-    
     idt.enable();
-    
     interrupt();
-    
-    terminal.println("and, we're back");
+    println("and, we're back");
     
     loop { }
   }

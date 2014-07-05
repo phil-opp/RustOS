@@ -1,6 +1,6 @@
-use terminal::Terminal;
+use panic::{print, println, put_int};
 
-mod terminal;
+mod panic;
 
 // adapeted from multiboot.h
 
@@ -168,38 +168,42 @@ impl multiboot_info {
     return (self.flags >> flag_number) & 0x1 == 0x1;
   }
   
-  pub unsafe fn multiboot_stuff(&self, mut terminal: Terminal) {
+  pub unsafe fn multiboot_stuff(&self) {
     
     /* Print out the flags. */
-    terminal.print("flags ="); terminal.put_int(self.flags); terminal.println("");
+    print("flags ="); put_int(self.flags); println("");
     
     if self.has_flag(6) {	
-	terminal.print("mmap_addr ="); terminal.put_int(self.mmap_addr); terminal.println("");
-        terminal.print("mmap_length ="); terminal.put_int(self.mmap_length); terminal.println("");
+	print("mmap_addr ="); put_int(self.mmap_addr); println("");
+        print("mmap_length ="); put_int(self.mmap_length); println("");
    
    let mut current: u32 = self.mmap_addr;
    while (current < self.mmap_addr + self.mmap_length) {
     let e: *multiboot_mmap_entry = transmute(current);
     if ((*e).typ == 1) {
-      print3ln("at ", current as u32, "", terminal);
-      print3ln("  size: ", (*e).size, "", terminal);
-      print3ln("  addr: ", (*e).addr as u32, "", terminal);
-      print3ln("  length: ", (*e).len as u32, "", terminal);
-      print3ln("  type: ", (*e).typ, "", terminal);
-      terminal.println("");
+      print3ln("at ", current as u32, "");
+      println("hello there");
+      println("yieldi");
+      print3ln("  size: ", (*e).size, "");
+      //loop{}
+      print3ln("  addr: ", (*e).addr as u32, "");
+      print3ln("  length: ", (*e).len as u32, "");
+      print3ln("  type: ", (*e).typ, "");
+      println("");
       }
     current += (*e).size + 4;
+    
    } 
      } else {
-     terminal.println("no memmap :(");
+     println("no memmap :(");
      }
   }
 }
 
-unsafe fn print3ln(first: &'static str , second: u32, last: &'static str, mut terminal: Terminal) {
-  terminal.print(first); 
-  terminal.put_int(second);
-  terminal.println(last);
+unsafe fn print3ln(first: &'static str , second: u32, last: &'static str) {
+  print(first); 
+  put_int(second);
+  println(last);
 }
   
 #[packed]
