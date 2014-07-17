@@ -1,9 +1,15 @@
 #![no_std]
 #![allow(ctypes)]
+#![feature(intrinsics)]
+#![feature(globs)]
+
 extern crate core;
-use core::vec;
+extern crate collections;
+
+use collections::vec;
 use core::option::None;
 use core::option::Some;
+
 use multiboot::multiboot_info;
 use allocator::set_allocator;
 use allocator::get_allocator;
@@ -19,6 +25,7 @@ mod panic;
 mod multiboot;
 mod gdt;
 mod allocator;
+mod scheduler;
 
 extern {
   
@@ -75,7 +82,6 @@ pub extern "C" fn abort() {
   }
 }
 
-
 #[no_mangle]
 pub extern "C" fn main(magic: u32, info: *multiboot_info) {
   
@@ -110,12 +116,13 @@ pub extern "C" fn main(magic: u32, info: *multiboot_info) {
     while i < 0x400 {
       idt.add_entry(i, test);
       i += 1;
-      
     }
     
     idt.enable();
     interrupt();
     println("and, we're back");
+    
+    scheduler::thread_stuff();
     
     loop { }
   }

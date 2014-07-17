@@ -4,7 +4,6 @@ use core::option::Option;
 use core::option::None;
 use core::option::Some;
 use panic::print;
-mod panic;
 
 static mut allocator: GoodEnoughForNow = GoodEnoughForNow {current: 0 as *u8, size: 0};
 

@@ -12,22 +12,31 @@ all: boot.bin
 .s.o:
 	$(AS) -g -o $@ $<
 
-main.o: core main.rs
-	$(RUSTC) -g -O --cfg x86_32 --target i386-intel-linux --crate-type lib -o main.o --emit obj main.rs -L . -Z no-landing-pads
-
-support.o: rust-core/support.rs
-	$(RUSTC) -g -O --target i386-intel-linux --crate-type lib -o support.o --emit obj $< -L . -Z no-landing-pads
+alloc: rust/src/liballoc/lib.rs core
+	$(RUSTC) --crate-type=lib --cfg=rynux -C passes=inline rust/src/liballoc/lib.rs --target i686-unknown-linux-gnu -L . -Z no-landing-pads 
 	
-core: rust-core/core/lib.rs
-	$(RUSTC) -g --crate-type=lib -C passes=inline $<  -Z no-landing-pads
+core: rust/src/libcore/lib.rs
+	$(RUSTC) --crate-type=lib -C passes=inline rust/src/libcore/lib.rs --target i686-unknown-linux-gnu -L . -Z no-landing-pads
+
+collections: rust/src/libcollections/lib.rs core alloc
+	$(RUSTC) --crate-type=lib -C passes=inline rust/src/libcollections/lib.rs --target i686-unknown-linux-gnu -L . -Z no-landing-pads
+	
+main.o: main.rs alloc core collections
+	$(RUSTC) -g -O main.rs --crate-type=lib -o main.o --emit=obj --cfg=x86_32 --target=i686-unknown-linux-gnu -L . -Z no-landing-pads
+	
+support.o: support.rs
+	$(RUSTC) -g -O support.rs --crate-type lib -o support.o --emit obj --target i686-unknown-linux-gnu -L . -Z no-landing-pads
 	
 run: boot.bin
 	$(QEMU) -kernel $<
 
 debug: boot.bin
-	$(QEMU) -S -gdb tcp::3334 -kernel $<
+	$(QEMU) -S -gdb tcp::3333 -kernel $<
 
-boot.bin: linker.ld main.o boot.o interrupt.o support.o
+thread.o: arch/x86_32/thread.s
+	$(AS) -g -o $@ $<
+	
+boot.bin: linker.ld main.o boot.o interrupt.o thread.o support.o
 	$(LD) -o $@ -T $^
 
 iso: boot.bin

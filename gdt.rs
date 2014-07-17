@@ -54,6 +54,7 @@ unsafe fn offset_mut(dst: *mut u8, offset: int) -> *mut u8 {
 }
 
 unsafe fn encodeGdtEntry(target: *mut u8, mut limit: u32, base: u32, typ: u8) {
+    // adapted from http://wiki.osdev.org/GDT_Tutorial
     // Check the limit to make sure that it can be encoded
     //let mut target: u32 = transmute(targ);
     if (limit > 65536) && (limit & 0xFFF) != 0xFFF {

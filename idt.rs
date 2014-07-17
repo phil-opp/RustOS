@@ -1,3 +1,5 @@
+#![feature(intrinsics)]
+extern crate core;
 
 #[packed]
 struct IDTEntry {
@@ -22,7 +24,7 @@ extern "C" {
 
 impl IDTEntry {
   
-  fn new(f: extern "C" unsafe fn() -> ()) -> IDTEntry {
+  fn new(f: unsafe extern "C" fn() -> ()) -> IDTEntry {
     unsafe {
       let (lower, upper): (u16, u16) = transmute(f);
       IDTEntry { offset_lower: lower, selector: 0x08, zero: 0, type_attr: 0x8E, offset_upper: upper }
@@ -49,7 +51,7 @@ impl IDT {
     IDT {limit: size * 8, base: mem + 6 }
   }
   
-  pub fn add_entry(&mut self, index: u32, f: extern "C" unsafe fn() -> ()) {
+  pub fn add_entry(&mut self, index: u32, f: unsafe extern "C" fn() -> ()) {
     assert(index < self.limit as u32);
     unsafe {
       let start: *IDTEntry = transmute(self.base);

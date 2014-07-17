@@ -1,6 +1,6 @@
 use arch::vga;
 
-mod arch;
+
 
 // TODO(ryan): next line is breaking abstractions (but can't find a nice way to init it...)
 pub static mut TERMINAL: Terminal = Terminal { vga: vga::VGA { mapped: vga::VGA_START, max: vga::VGA_MAX }, current: Point {x: 0, y: 0} };

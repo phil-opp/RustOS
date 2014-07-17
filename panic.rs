@@ -1,33 +1,30 @@
 use core::option::Option;
 use core::option::None;
 use core::option::Some;
-use terminal::Terminal;
-
-mod arch;
-mod terminal;
+use terminal::TERMINAL;
 
 pub fn init() {
-  unsafe { terminal::TERMINAL.clear_screen(); }
+  unsafe { TERMINAL.clear_screen(); }
 }
 
 pub fn print(string: &'static str) {
   unsafe {
-    terminal::TERMINAL.print(string);
+    TERMINAL.print(string);
   }
 }
 
 pub fn println(string: &'static str) {
   unsafe {
-    terminal::TERMINAL.println(string);
+    TERMINAL.println(string);
   }
 }
 
 pub fn put_int(integer: u32) {
   unsafe {
-    terminal::TERMINAL.put_int(integer);
+    TERMINAL.put_int(integer);
   }
 }
-pub unsafe fn panic() {
+pub fn panic() {
   unsafe {
     println("panic!");
   }

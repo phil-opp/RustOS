@@ -1,7 +1,5 @@
 use panic::{print, println, put_int};
 
-mod panic;
-
 // adapeted from multiboot.h
 
 /* The magic field should contain this. */
@@ -165,7 +163,7 @@ extern "rust-intrinsic" {
 impl multiboot_info {
   
   fn has_flag(&self, flag_number: u8) -> bool {
-    return (self.flags >> flag_number) & 0x1 == 0x1;
+    return (self.flags >> flag_number as uint) & 0x1 == 0x1;
   }
   
   pub unsafe fn multiboot_stuff(&self) {

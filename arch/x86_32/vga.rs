@@ -1,5 +1,6 @@
 extern crate core;
-use core::ptr::offset_mut;
+use core::prelude::*;
+use core::mem::transmute;
 
 pub static VGA_START: *u16 = 0xb8000 as *u16; // TODO(ryan) this shouldn't be exposed
 pub static VGA_MAX: (uint, uint) = (80, 24);
@@ -42,7 +43,8 @@ impl VGA {
 	false
       } else {
 	unsafe {
-	  *offset_mut(self.mapped, (myX * desiredY + desiredX) as int) = make_vgaentry(chr, make_color(fg, bg));
+	  let as_mut: *mut u16 = transmute(self.mapped.offset((myX * desiredY + desiredX) as int));
+	  *as_mut = make_vgaentry(chr, make_color(fg, bg));
 	}
 	true
       }

@@ -1,3 +1,6 @@
 [submodule "rust-core"]
 	path = rust-core
 	url = https://github.com/thestinger/rust-core.git
+[submodule "rust"]
+	path = rust
+	url = ./rust/
