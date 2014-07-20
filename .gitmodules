@@ -4,3 +4,6 @@
 [submodule "rust"]
 	path = rust
 	url = ./rust/
+[submodule "lazy-static"]
+	path = lazy-static
+	url = ./lazy-static/

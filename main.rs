@@ -1,10 +1,16 @@
 #![no_std]
+#![feature(phase)]
+
 #![allow(ctypes)]
 #![feature(intrinsics)]
 #![feature(globs)]
 
 extern crate core;
 extern crate collections;
+extern crate alloc;
+
+#[phase(plugin)]
+extern crate lazy_static;
 
 use collections::vec;
 use core::option::None;
@@ -43,7 +49,7 @@ extern "rust-intrinsic" {
 #[no_mangle]
 pub extern "C" fn callback() {
   unsafe {
-    print("its an interrupt!");
+    //print("its an interrupt!");
   }
 }
 
@@ -122,7 +128,9 @@ pub extern "C" fn main(magic: u32, info: *multiboot_info) {
     interrupt();
     println("and, we're back");
     
+    println("start scheduling?");
     scheduler::thread_stuff();
+    println("kernel is done!");
     
     loop { }
   }
@@ -145,10 +153,5 @@ pub extern "C" fn realloc(ptr: *u8, size: uint) -> *u8 {
 
 #[no_mangle]
 pub extern "C" fn __morestack() {
-  loop { } //TODO(ryan) should I do anything here?
-}
-
-#[no_mangle]
-pub extern "C" fn memcmp() {
   loop { } //TODO(ryan) should I do anything here?
 }

@@ -24,16 +24,16 @@ pub fn put_int(integer: u32) {
     TERMINAL.put_int(integer);
   }
 }
-pub fn panic() {
+
+pub fn panic_message(string: &'static str) -> ! {
   unsafe {
-    println("panic!");
+    println(string);
+    println("^ panic ->");
   }
   loop {}
 }
 
-pub unsafe fn abort() {
-  unsafe {
-    println("kernel panic! (from abort())");
-  }
+pub unsafe fn abort() -> ! {
+  panic_message("(from abort)");
   loop {}
 }

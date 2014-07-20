@@ -1,6 +1,6 @@
 use arch::vga;
-
-
+use panic::panic_message;
+use core::prelude::*;
 
 // TODO(ryan): next line is breaking abstractions (but can't find a nice way to init it...)
 pub static mut TERMINAL: Terminal = Terminal { vga: vga::VGA { mapped: vga::VGA_START, max: vga::VGA_MAX }, current: Point {x: 0, y: 0} };
@@ -46,8 +46,25 @@ impl Terminal {
       self.current.y += 1;
     }
     if self.current.y >= self.vga.y_max() {
-      self.current.y = 0;
+      self.scroll();
+      self.current.y = self.vga.y_max() - 1;
     }
+  }
+  
+  
+  fn scroll(&mut self) {
+    range(1, self.vga.y_max(), |j| {
+      range(0, self.vga.x_max(), |i| {
+	let (chr, fg, bg) = match self.vga.get((i, j)) {
+	  Some(tup) => tup,
+	  None => panic_message("error in Terminal.scroll")
+	};
+	self.vga.put((i, j - 1), chr, fg, bg);
+      })
+    });
+    range(0, self.vga.x_max(), |i| {
+      self.vga.put((i, self.vga.y_max() - 1), 'a' as u8, vga::Black, vga::Black);
+    });
   }
   
   pub fn clear_screen(&mut self) {

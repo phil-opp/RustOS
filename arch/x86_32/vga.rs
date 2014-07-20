@@ -50,6 +50,19 @@ impl VGA {
       }
   }
   
+  pub fn get(&mut self, point: (uint, uint)) -> Option<(u8, Color, Color)> {
+    let (desiredX, desiredY) = point;
+      let (myX, myY) = self.max;
+      if desiredX >= myX || desiredY >= myY {
+	None
+      } else {
+	unsafe {
+	  let entry = self.mapped.offset((myX * desiredY + desiredX) as int);
+	  Some(get_vgaentry(*entry))
+	}
+      }
+  }
+  
   pub fn x_max(&self) -> uint {
     let (x, _) = self.max;
     x as uint
@@ -66,6 +79,13 @@ fn make_color(fg: Color, bg: Color) -> u8 {
   (fg as u8) | (bg as u8) << 4
 }
 
+
+fn get_vgaentry(entry: u16) -> (u8, Color, Color) {
+  unsafe { 
+    let (c, color): (u8, u8) = transmute(entry);
+    (c, transmute(color & 0xf), transmute(color >> 4))
+  }
+}
 
 fn make_vgaentry(c: u8, color_entry: u8) -> u16 {
   let c8: u8 = c as u8;

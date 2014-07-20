@@ -3,7 +3,7 @@ extern crate core;
 use core::option::Option;
 use core::option::None;
 use core::option::Some;
-use panic::print;
+use panic::{print, println};
 
 static mut allocator: GoodEnoughForNow = GoodEnoughForNow {current: 0 as *u8, size: 0};
 
@@ -68,7 +68,7 @@ impl Allocator for GoodEnoughForNow {
 }
 
 pub fn malloc(size: uint) -> *u8 {
-  unsafe { print("mallocing..."); }
+  unsafe { println("mallocing..."); }
   unsafe {
     match allocator.allocate(size) {
     Some(ptr) => ptr,

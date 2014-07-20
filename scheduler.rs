@@ -1,51 +1,82 @@
-
-extern crate core;
-extern crate collections;
+use core::one::{ONCE_INIT, Once};
 
 use core::prelude::*;
+use core::ty::Unsafe;
+use collections::Deque;
+use collections::dlist::DList;
+use alloc::owned::Box;
 
 use arch::thread::Thread;
-use arch::thread;
-use panic::{panic, println};
+use panic::*;
 use allocator::malloc;
 
 struct Scheduler {
-  //queue: Deque<thread::Thread>,
-  running: thread::Thread
+  queue: Box<Deque<Thread>>
 }
 
+lazy_static! {
+  static ref SCHEDULER: Unsafe<Scheduler> = Unsafe::new(Scheduler::new());
+}
+  
 impl Scheduler {
   
   pub fn new() -> Scheduler {
-    Scheduler { running: Thread::current_state() }
+    let list: DList<Thread> = DList::new();
+    Scheduler { queue: box list as Box<Deque<Thread>> }
   }
   
-  pub fn schedule(&mut self, thread: thread::Thread) {
-    //self.queue.push_back(thread);
+  pub fn schedule(&mut self, func: extern "C" fn() -> ()) {
+    let mem = malloc(1024*10);
+    let t = Thread::new(func, mem);
+    self.queue.push_back(t);
   }
   
   pub fn timer_callback(&mut self) {
-    /*self.queue.push_back(thread::Thread::current_state());
-    match self.queue.pop_front() {
-      Some(thread) => self.running = thread,
-      None => panic()
+    let thread = Thread::current_state_or_resumed();
+    match thread {
+      Some(thread) => {self.queue.push_back(thread) },
+      None => { return }
     }
-    unsafe { self.running.resume(); }*/
+
+    
+    println("would have resumed here");
+    
+    match self.queue.pop_front() {
+      Some(thread) => unsafe { thread.resume(); },
+      None => panic_message("nothing in the queue?!")
+    }
+    
+  }
+  
+  fn unschedule_current(&mut self) {
+    match self.queue.pop_front() {
+      Some(thread) => unsafe { thread.resume(); },
+      None => panic_message("nothing in the queue?!")
+    }
   }
 
 }
 
-extern "C" fn foo() {
+impl Share for Scheduler { }
+
+fn inner_thread_test(arg: uint) {
+  print("got int: "); put_int(arg as u32); println("");
+}
+
+extern "C" fn test_thread() {
   println("in a thread!");
+  inner_thread_test(10);
+  
+  unsafe { (*SCHEDULER.get()).unschedule_current(); }
 }
 
 pub fn thread_stuff() {
   println("starting thread test");
-  let mem = malloc(1024*10);
-  let t = Thread::new(foo, mem);
-  let mut s = Scheduler::new();
-  s.schedule(t);
-  s.schedule(Thread::current_state());
-  s.timer_callback();
-  s.timer_callback();
+  unsafe {
+    static mut o: Once = ONCE_INIT;
+    o.doit(|| {print("hi");});
+    let s: *mut Scheduler = SCHEDULER.get();
+    (*s).schedule(test_thread);
+    (*s).timer_callback();
+  }
 }
