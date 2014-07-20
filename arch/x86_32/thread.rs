@@ -69,12 +69,9 @@ extern "C" fn current_state_or_resumed_impl() -> Option<Thread> {
       
       if eip as u32 == 0 {
 	return None
+      } else {
+	Some(Thread {stack_pointer: esp, base_pointer: ebp, instruction_pointer: eip})
       }
-      
-      let thread = Thread {stack_pointer: esp, base_pointer: ebp, instruction_pointer: eip};
-      
-      Some(thread)
-      
     }
 }
  

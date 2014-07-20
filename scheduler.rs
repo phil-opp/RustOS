@@ -26,21 +26,23 @@ impl Scheduler {
   }
   
   pub fn schedule(&mut self, func: extern "C" fn() -> ()) {
+    // TODO(ryan) need to add cleanup code to end of called function
+    // or else top-level will return to nowhere
     let mem = malloc(1024*10);
     let t = Thread::new(func, mem);
     self.queue.push_back(t);
   }
   
-  pub fn timer_callback(&mut self) {
+  pub fn switch(&mut self) {
     let thread = Thread::current_state_or_resumed();
+    // TODO(ryan) my confidence in this is shaky because it relies on being able
+    // to return to the same stack twice with different return values from current_state_or_resumed()
+    // but the something might have gotten clobbered in the meantime that messes stuff up
     match thread {
       Some(thread) => {self.queue.push_back(thread) },
       None => { return }
     }
 
-    
-    println("would have resumed here");
-    
     match self.queue.pop_front() {
       Some(thread) => unsafe { thread.resume(); },
       None => panic_message("nothing in the queue?!")
@@ -60,7 +62,7 @@ impl Scheduler {
 impl Share for Scheduler { }
 
 fn inner_thread_test(arg: uint) {
-  print("got int: "); put_int(arg as u32); println("");
+  print("    got int: "); put_int(arg as u32); println("");
 }
 
 extern "C" fn test_thread() {
@@ -77,6 +79,6 @@ pub fn thread_stuff() {
     o.doit(|| {print("hi");});
     let s: *mut Scheduler = SCHEDULER.get();
     (*s).schedule(test_thread);
-    (*s).timer_callback();
+    (*s).switch();
   }
 }

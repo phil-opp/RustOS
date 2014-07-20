@@ -68,7 +68,6 @@ impl Allocator for GoodEnoughForNow {
 }
 
 pub fn malloc(size: uint) -> *u8 {
-  unsafe { println("mallocing..."); }
   unsafe {
     match allocator.allocate(size) {
     Some(ptr) => ptr,
@@ -78,7 +77,6 @@ pub fn malloc(size: uint) -> *u8 {
 }
 
 pub fn free(ptr: *u8) {
-  unsafe { print("freeing..."); }
   unsafe {
     allocator.free(ptr)
   }
@@ -89,8 +87,6 @@ extern "C" {
 }
 
 pub fn realloc(old: *u8, size: uint) -> *u8 {
-  //loop{}
-  unsafe { print("reallocing..."); }
   let new = malloc(size);
   unsafe { memmove(new, old, size as int); } //TODO(ryan): size may be too large
   new

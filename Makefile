@@ -2,7 +2,7 @@ LD=i686-elf-ld
 RUSTC=rustc
 QEMU=qemu-system-i386
 AS=i686-elf-as
-RUSTFLAGS=-g -O --crate-type=lib --cfg=rynux --cfg=x86_32 -C linker=$(LD) --target i686-unknown-linux-gnu -L . -Z no-landing-pads
+RUSTFLAGS=-g -O --crate-type=lib --cfg=kernel --cfg=x86_32 -C linker=$(LD) --target i686-unknown-linux-gnu -L . -Z no-landing-pads
 
 all: boot.bin
 
