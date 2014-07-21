@@ -1,9 +1,7 @@
-[submodule "rust-core"]
-	path = rust-core
-	url = https://github.com/thestinger/rust-core.git
+
 [submodule "rust"]
 	path = rust
-	url = ./rust/
+	url = https://github.com/ryanra/rust.git
 [submodule "lazy-static"]
 	path = lazy-static
-	url = ./lazy-static/
+	url = https://github.com/ryanra/lazy-static.rs
