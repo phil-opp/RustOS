@@ -1,20 +1,13 @@
-#![no_std]
 #![feature(phase)]
 
 #![allow(ctypes)]
 #![feature(intrinsics)]
 #![feature(globs)]
 
-extern crate core;
-extern crate collections;
-extern crate alloc;
-
 #[phase(plugin)]
 extern crate lazy_static;
 
-use collections::vec;
-use core::option::None;
-use core::option::Some;
+use std::vec;
 
 use multiboot::multiboot_info;
 use allocator::set_allocator;
@@ -82,7 +75,7 @@ unsafe fn vstuff() {
 }
 
 #[no_mangle]
-pub extern "C" fn abort() {
+pub extern "C" fn abort() -> ! {
   unsafe {
     panic::abort();
   }

@@ -1,6 +1,3 @@
-use core::option::Option;
-use core::option::None;
-use core::option::Some;
 use terminal::TERMINAL;
 
 pub fn init() {

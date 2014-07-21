@@ -1,5 +1,4 @@
 #![feature(intrinsics)]
-extern crate core;
 
 #[packed]
 struct IDTEntry {

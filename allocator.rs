@@ -1,8 +1,3 @@
-#![no_std]
-extern crate core;
-use core::option::Option;
-use core::option::None;
-use core::option::Some;
 use panic::{print, println};
 
 static mut allocator: GoodEnoughForNow = GoodEnoughForNow {current: 0 as *u8, size: 0};

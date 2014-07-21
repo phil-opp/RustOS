@@ -13,10 +13,10 @@ all: boot.bin
 .s.o:
 	$(AS) -g -o $@ $<
 
-lazy_static: lazy-static/src/lazy_static.rs core collections
+lazy_static: lazy-static/src/lazy_static.rs std
 	$(RUSTC) $< $(RUSTFLAGS)
 	
-alloc: rust/src/liballoc/lib.rs core
+alloc: rust/src/liballoc/lib.rs core libc
 	$(RUSTC) $< $(RUSTFLAGS)
 	
 core: rust/src/libcore/lib.rs
@@ -24,8 +24,21 @@ core: rust/src/libcore/lib.rs
 
 collections: rust/src/libcollections/lib.rs core alloc
 	$(RUSTC) $< $(RUSTFLAGS)
+
+rand: rust/src/librand/lib.rs core
+	$(RUSTC) $< $(RUSTFLAGS)
 	
-main.o: main.rs alloc core collections lazy_static
+std: rust/src/libstd/lib.rs core alloc collections rand libc rustrt
+	$(RUSTC) $< $(RUSTFLAGS)
+
+libc: rust/src/liblibc/lib.rs
+	$(RUSTC) $< $(RUSTFLAGS)
+	
+rustrt: rust/src/librustrt/lib.rs core alloc libc collections
+	$(RUSTC) $< $(RUSTFLAGS)
+
+	
+main.o: main.rs std alloc core collections lazy_static
 	$(RUSTC) $< -o $@ --emit=obj $(RUSTFLAGS)
 	
 rlibc.o: rust/src/librlibc/lib.rs 

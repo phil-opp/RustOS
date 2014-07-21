@@ -1,10 +1,8 @@
-use core::one::{ONCE_INIT, Once};
+use std::one::{ONCE_INIT, Once};
 
-use core::prelude::*;
-use core::ty::Unsafe;
-use collections::Deque;
-use collections::dlist::DList;
-use alloc::owned::Box;
+use std::ty::Unsafe;
+use std::collections::Deque;
+use std::collections::dlist::DList;
 
 use arch::thread::Thread;
 use panic::*;

@@ -1,5 +1,5 @@
-use core::mem::transmute;
-use core::prelude::*;
+use std::mem::transmute;
+
 use allocator::malloc;
 use panic::*;
 

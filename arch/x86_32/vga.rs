@@ -1,6 +1,4 @@
-extern crate core;
-use core::prelude::*;
-use core::mem::transmute;
+use std::mem::transmute;
 
 pub static VGA_START: *u16 = 0xb8000 as *u16; // TODO(ryan) this shouldn't be exposed
 pub static VGA_MAX: (uint, uint) = (80, 24);
