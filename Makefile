@@ -2,7 +2,8 @@ LD=i686-elf-ld
 RUSTC=rustc
 QEMU=qemu-system-i386
 AS=i686-elf-as
-RUSTFLAGS=-g -O --crate-type=lib --cfg=kernel --cfg=x86_32 -C linker=$(LD) --target i686-unknown-linux-gnu -L . -Z no-landing-pads
+TARGET=i686-unknown-linux-gnu
+RUSTFLAGS=-g -O --crate-type=lib --cfg=kernel -C linker=$(LD) --target $(TARGET) -L . -Z no-landing-pads
 
 all: boot.bin
 
@@ -61,7 +62,7 @@ iso: boot.bin
 	grub-mkrescue -o boot.iso isodir
 
 vb: iso
-	virtualbox --debug --startvm rynux
+	virtualbox --debug --startvm rustos
 	
 clean:
 	rm -f *.bin *.o *.img *.iso *.rlib
