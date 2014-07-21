@@ -1,4 +1,4 @@
-use terminal::TERMINAL;
+pub use terminal::TERMINAL;
 
 pub fn init() {
   unsafe { TERMINAL.clear_screen(); }

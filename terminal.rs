@@ -1,8 +1,10 @@
 use arch::vga;
 use panic::panic_message;
+use std::io::{Writer, IoResult};
 
 // TODO(ryan): next line is breaking abstractions (but can't find a nice way to init it...)
 pub static mut TERMINAL: Terminal = Terminal { vga: vga::VGA { mapped: vga::VGA_START, max: vga::VGA_MAX }, current: Point {x: 0, y: 0} };
+
 
 extern "rust-intrinsic" {
     pub fn transmute<T, U>(x: T) -> U;
@@ -22,7 +24,6 @@ pub struct Terminal {
 
 impl Terminal {
 
-  #[inline(always)]
   pub fn init() -> Terminal {
     Terminal::new(vga::VGA::new())
   }
@@ -116,6 +117,17 @@ impl Terminal {
     //for c in s {
     //  self.put_char(s);
     //}
+  }
+  
+}
+
+impl Writer for Terminal {
+
+  fn write(&mut self, buf: &[u8]) -> IoResult<()> {
+    for &c in buf.iter() {
+      self.put_char(c);
+    }
+    Ok(())
   }
   
 }

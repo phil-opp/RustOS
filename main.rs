@@ -1,5 +1,6 @@
-#![feature(phase)]
 
+#![feature(phase)]
+#![feature(lang_items)]
 #![allow(ctypes)]
 #![feature(intrinsics)]
 #![feature(globs)]
@@ -86,8 +87,11 @@ pub extern "C" fn main(magic: u32, info: *multiboot_info) {
   
   panic::init();
   unsafe {
+    println("started!");
+    //loop{};
     println("hiiii");
     println("bye");
+    
     
     if magic != multiboot::MULTIBOOT_BOOTLOADER_MAGIC {
       println("no good!");
@@ -121,8 +125,11 @@ pub extern "C" fn main(magic: u32, info: *multiboot_info) {
     interrupt();
     println("and, we're back");
     
-    println("start scheduling?");
-    scheduler::thread_stuff();
+    let t2: &mut Writer = transmute(&panic::TERMINAL as &Writer);
+    t2.write("hello world from writer\n".as_bytes());
+    
+    //println("start scheduling?");
+    //scheduler::thread_stuff();
     println("kernel is done!");
     
     loop { }
