@@ -15,9 +15,9 @@ A simple, [language-based](https://en.wikipedia.org/wiki/Language-based_system) 
   * ld (x86 32 bit)
   * rustc (version 0.11)
 
-2. Pull the repo
+2. Pull the repo `git clone https://github.com/ryanra/RustOS.git`
 
-3. Make sure to pull the submodules as well
+3. Make sure to pull the submodules as well: `git submodule update --init --recursive`
 
 4. Run:
   * On qemu: `make run`
@@ -38,7 +38,7 @@ will need to be considered at some point)
 
   2. Micro/Monolithic kernel is really irrelevant because everything is running in kernel mode and safety
   is enforced by the language, so there's no need for user mode. That said, the goal is to keep this code 
-  base small and add an interface for extending it.
+  base small and enforce least-privledge with tight modules that also allow future additions.
 
 3. Security. That's the big advantage that Rust would bring to an OS and that current OSes are really
 lacking.
@@ -71,9 +71,9 @@ kernel. The current (horrible) solution is to inline used methods.
 
 3. The current allocator never actually frees data and is just there to get collections working.
 
-# Organization:
+### Organization:
 1. Not that much right now because it's so simple. It feels like some (or maybe all?) of this stuff could be moved 
 into the Rust code-base (especially the allocator) as an alternative set of primitives to the current Win/Unix ones.
 
-# License
+### License
 [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) or the [MIT license](http://opensource.org/licenses/MIT), at your option
