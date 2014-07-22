@@ -23,10 +23,8 @@ pub fn put_int(integer: u32) {
 }
 
 pub fn panic_message(string: &'static str) -> ! {
-  unsafe {
-    println(string);
-    println("^ panic ->");
-  }
+  println(string);
+  println("^ panic ->");
   loop {}
 }
 

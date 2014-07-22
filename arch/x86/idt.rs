@@ -1,4 +1,5 @@
-#![feature(intrinsics)]
+use std::mem;
+use panic::*;
 
 #[packed]
 struct IDTEntry {
@@ -16,9 +17,13 @@ extern "rust-intrinsic" {
 }
 
 extern "C" {
+
   fn disable_interrupts();
+
   fn lidt(ptr: *mut IDT);
+  
   fn enable_interrupts();
+
 }
 
 impl IDTEntry {
@@ -46,8 +51,12 @@ fn assert(b: bool) {
 
 impl IDT {
 
-  pub fn new(mem: u32, size: u16) -> IDT {
-    IDT {limit: size * 8, base: mem + 6 }
+  pub fn new() -> IDT {
+    unsafe { 
+      let mem: Vec<u8> = Vec::with_capacity(0x399 * 9);
+      let (raw, len): (u32, u32) = transmute(mem.as_slice()); 
+      IDT {limit: 0x399*9 as u16, base: raw + 6 } 
+    }
   }
   
   pub fn add_entry(&mut self, index: u32, f: unsafe extern "C" fn() -> ()) {
@@ -62,8 +71,19 @@ impl IDT {
   pub fn enable(&mut self) {
     unsafe {
       lidt(self);
-      enable_interrupts();
     }
+  }
+  
+  pub fn disable_interrupts() {
+    unsafe { disable_interrupts(); }
+  }
+  
+  pub unsafe fn enable_interrupts() {
+    enable_interrupts();
+  }
+  
+  pub fn len(&self) -> uint {
+    return (self.limit / 8) as uint;
   }
  
 }

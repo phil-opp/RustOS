@@ -16,24 +16,16 @@ use allocator::get_allocator;
 use panic::print;
 use terminal::Terminal;
 use arch::vga;
+use arch::cpu;
 use panic::{print, println, put_int};
 
 mod arch;
-mod idt;
 mod terminal;
 mod panic;
 mod multiboot;
-mod gdt;
 mod allocator;
 mod scheduler;
 
-extern {
-  
-  fn test();
-  
-  fn interrupt();
-  
-}
 
 extern "rust-intrinsic" {
   pub fn transmute<T, U>(x: T) -> U;
@@ -42,9 +34,7 @@ extern "rust-intrinsic" {
 
 #[no_mangle]
 pub extern "C" fn callback() {
-  unsafe {
-    print("    in an interrupt!");
-  }
+  //println("    in an interrupt!");
 }
 
 fn float_to_int(x: f32) -> u32 {
@@ -54,22 +44,16 @@ fn float_to_int(x: f32) -> u32 {
   }
 }
 
-fn identity_map(mut gdt: gdt::GDT) {
-  gdt.add_entry(0, 0, 0);                     // Selector 0x00 cannot be used
-  gdt.add_entry(0, 0xffffffff, 0x9A);         // Selector 0x08 will be our code
-  gdt.add_entry(0, 0xffffffff, 0x92);         // Selector 0x10 will be our data
-  //gdt.add_entry( = {.base=&myTss, .limit=sizeof(myTss), .type=0x89}; // You can use LTR(0x18)
-}
 
-fn vstuff() {
+fn test_allocator() {
   let mut v = vec::Vec::new();
   
-  println("in vstuff");
-  v.push("hello from a vector!");
-  println("pushed workded");
+  println("Testing allocator with a vector push");
+  v.push("   hello from a vector!");
+  println("   push didn't crash");
   match v.pop() {
     Some(string) => println(string),
-    None => println("uh oh!")
+    None => println("    push was weird...")
   }
 
 }
@@ -86,7 +70,11 @@ pub extern "C" fn main(magic: u32, info: *multiboot_info) {
   
   panic::init();
   unsafe {
-
+    set_allocator((0x100000*12) as *u8, 0x1c9c380 as *u8);
+    test_allocator();
+    
+    let mut cpu = cpu::CPU::new();
+    
     if magic != multiboot::MULTIBOOT_BOOTLOADER_MAGIC {
       panic::panic_message("Multiboot magic is invalid");
     } else {
@@ -95,25 +83,9 @@ pub extern "C" fn main(magic: u32, info: *multiboot_info) {
       (*info).multiboot_stuff();
     }
         
-    let mut gdt = ::gdt::GDT::new(0x100000*11, 0x18);
-    identity_map(gdt);
-    gdt.enable();
-
-    set_allocator((0x100000*12) as *u8, 0x1c9c380 as *u8);
-    
-    vstuff();
-        
-    let mut idt = ::idt::IDT::new(0x100000*10, 0x400);
-    let mut i = 0;
-    
-    while i < 0x400 {
-      idt.add_entry(i, test);
-      i += 1;
-    }
-    
-    idt.enable();
+    cpu.enable_interrupts();
     println("Going to interrupt: ");
-    interrupt();
+    cpu.test_interrupt();
     println("    back from interrupt!");
     
     let t2: &mut Writer = transmute(&panic::TERMINAL as &Writer);

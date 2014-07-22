@@ -1,3 +1,6 @@
+use std::mem;
+use panic::*;
+
 extern "C" {
   
   fn lgdt(ptr: *GDTReal);
@@ -9,13 +12,6 @@ extern "rust-intrinsic" {
 
     fn offset<T>(dst: *T, offset: int) -> *T;
 }
-
-struct GDTEntry {
-  limit: u32,
-  base: u32,
-  typ: u8
-}
-
 
 pub struct GDT {
   index: u32,
@@ -30,8 +26,12 @@ struct GDTReal {
 
 impl GDT {
   
-  pub fn new(mem: u32, size: u16) -> GDT {
-    GDT {index: 0, real: GDTReal { limit: size * 8, base: mem }} 
+  pub fn new() -> GDT {
+    unsafe { 
+      let mem: Vec<u8> = Vec::with_capacity(0x18);
+      let (raw, len): (u32, u32) = transmute(mem.as_slice());
+      GDT {index: 0, real: GDTReal { limit: 0x18 as u16, base: raw }} 
+    }
   }
   
   pub fn add_entry(&mut self, base: u32, limit: u32, typ: u8) {
@@ -46,6 +46,14 @@ impl GDT {
       lgdt(&self.real);
     }
   }
+  
+  pub fn identity_map(&mut self) {
+    self.add_entry(0, 0, 0);                     // Selector 0x00 cannot be used
+    self.add_entry(0, 0xffffffff, 0x9A);         // Selector 0x08 will be our code
+    self.add_entry(0, 0xffffffff, 0x92);         // Selector 0x10 will be our data
+    //gdt.add_entry( = {.base=&myTss, .limit=sizeof(myTss), .type=0x89}; // You can use LTR(0x18)
+  }
+
 
 }
 

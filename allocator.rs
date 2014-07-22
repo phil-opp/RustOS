@@ -1,4 +1,4 @@
-use panic::{print, println};
+use panic::{print, println, put_int};
 
 static mut allocator: GoodEnoughForNow = GoodEnoughForNow {current: 0 as *u8, size: 0};
 

@@ -51,7 +51,7 @@ run: boot.bin
 debug: boot.bin
 	$(QEMU) -S -gdb tcp::3333 -kernel $<
 
-thread.o: arch/x86_32/thread.s
+%.o: arch/x86/%.s
 	$(AS) -g -o $@ $<
 	
 boot.bin: linker.ld main.o boot.o interrupt.o thread.o rlibc.o

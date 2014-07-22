@@ -69,11 +69,12 @@ kernel. The current (horrible) solution is to inline used methods.
 
 2. Threading is buggy and needs more attention.
 
-3. The current allocator never actually frees data and is just there to get collections working.
+3. The current allocator never actually frees data and is just there to get `collections` working.
 
 ### Organization:
-1. Not that much right now because it's so simple. It feels like some (or maybe all?) of this stuff could be moved 
-into the Rust code-base (especially the allocator) as an alternative set of primitives to the current Win/Unix ones.
+1. Architecture-specific files (mostly) are now in arch/
+
+2. `std` had been stripped out of dependencies on an OS/libc and is usable (so, we can use stuff libcore, libcollection, librand)
 
 ### License
 [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) or the [MIT license](http://opensource.org/licenses/MIT), at your option

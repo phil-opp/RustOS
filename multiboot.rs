@@ -1,6 +1,6 @@
 use panic::{print, println, put_int};
 
-// adapeted from multiboot.h
+// adapted from multiboot.h
 
 /* The magic field should contain this. */
 static MULTIBOOT_HEADER_MAGIC: u32 = 0x1BADB002;
@@ -180,8 +180,6 @@ impl multiboot_info {
     let e: *multiboot_mmap_entry = transmute(current);
     if ((*e).typ == 1) {
       print3ln("at ", current as u32, "");
-      println("hello there");
-      println("yieldi");
       print3ln("  size: ", (*e).size, "");
       //loop{}
       print3ln("  addr: ", (*e).addr as u32, "");
