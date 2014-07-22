@@ -43,7 +43,7 @@ extern "rust-intrinsic" {
 #[no_mangle]
 pub extern "C" fn callback() {
   unsafe {
-    //print("its an interrupt!");
+    print("    in an interrupt!");
   }
 }
 
@@ -61,9 +61,8 @@ fn identity_map(mut gdt: gdt::GDT) {
   //gdt.add_entry( = {.base=&myTss, .limit=sizeof(myTss), .type=0x89}; // You can use LTR(0x18)
 }
 
-unsafe fn vstuff() {
+fn vstuff() {
   let mut v = vec::Vec::new();
-  //loop{};
   
   println("in vstuff");
   v.push("hello from a vector!");
@@ -87,21 +86,15 @@ pub extern "C" fn main(magic: u32, info: *multiboot_info) {
   
   panic::init();
   unsafe {
-    println("started!");
-    //loop{};
-    println("hiiii");
-    println("bye");
-    
-    
+
     if magic != multiboot::MULTIBOOT_BOOTLOADER_MAGIC {
-      println("no good!");
+      panic::panic_message("Multiboot magic is invalid");
     } else {
-      println("valid header!");
+      println("Multiboot magic is valid");
       put_int(info as u32);
       (*info).multiboot_stuff();
     }
-    
-    
+        
     let mut gdt = ::gdt::GDT::new(0x100000*11, 0x18);
     identity_map(gdt);
     gdt.enable();
@@ -109,10 +102,7 @@ pub extern "C" fn main(magic: u32, info: *multiboot_info) {
     set_allocator((0x100000*12) as *u8, 0x1c9c380 as *u8);
     
     vstuff();
-    
-    
-    println("");
-    
+        
     let mut idt = ::idt::IDT::new(0x100000*10, 0x400);
     let mut i = 0;
     
@@ -122,16 +112,17 @@ pub extern "C" fn main(magic: u32, info: *multiboot_info) {
     }
     
     idt.enable();
+    println("Going to interrupt: ");
     interrupt();
-    println("and, we're back");
+    println("    back from interrupt!");
     
     let t2: &mut Writer = transmute(&panic::TERMINAL as &Writer);
-    t2.write("hello world from writer\n".as_bytes());
+    t2.write("Hello world from writer\n".as_bytes());
     
     //println("start scheduling?");
-    //scheduler::thread_stuff();
-    println("kernel is done!");
+    //scheduler::thread_stuff(); // <-- currently broken :(
     
+    println("Kernel is done!");
     loop { }
   }
 }
