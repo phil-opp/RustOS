@@ -37,14 +37,6 @@ pub extern "C" fn callback() {
   //println("    in an interrupt!");
 }
 
-fn float_to_int(x: f32) -> u32 {
-  unsafe {
-    let i: *u32 = transmute(&x);
-    *i
-  }
-}
-
-
 fn test_allocator() {
   let mut v = vec::Vec::new();
   
