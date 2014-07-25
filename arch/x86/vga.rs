@@ -1,6 +1,6 @@
 use std::mem::transmute;
 
-pub static VGA_START: *u16 = 0xb8000 as *u16; // TODO(ryan) this shouldn't be exposed
+pub static VGA_START: *mut u16 = 0xb8000 as *mut u16; // TODO(ryan) this shouldn't be exposed
 pub static VGA_MAX: (uint, uint) = (80, 24);
 
 pub enum Color {
@@ -23,7 +23,7 @@ pub enum Color {
 }
 
 pub struct VGA { // TODO(ryan) struct fields shouldn't be exposed
-  pub mapped: *u16,
+  pub mapped: *mut u16,
   pub max: (uint, uint)
 }
 

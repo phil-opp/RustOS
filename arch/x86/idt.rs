@@ -1,5 +1,7 @@
 use std::mem;
 use panic::*;
+use std::ptr::RawPtr;
+use std::mem::transmute;
 
 #[packed]
 struct IDTEntry {
@@ -8,12 +10,6 @@ struct IDTEntry {
   zero: u8,      // unused, set to 0
   type_attr: u8, // type and attributes, see below
   offset_upper: u16 // offset bits 16..31
-}
-
-extern "rust-intrinsic" {
-    fn transmute<T, U>(x: T) -> U;
-
-    fn offset<T>(dst: *T, offset: int) -> *T;
 }
 
 extern "C" {
@@ -62,8 +58,8 @@ impl IDT {
   pub fn add_entry(&mut self, index: u32, f: unsafe extern "C" fn() -> ()) {
     assert(index < self.limit as u32);
     unsafe {
-      let start: *IDTEntry = transmute(self.base);
-      let e: *mut IDTEntry = transmute(offset(start, index as int)); 
+      let start: *mut IDTEntry = transmute(self.base);
+      let e: *mut IDTEntry = transmute(start.offset(index as int)); 
       *e = IDTEntry::new(f);
     }
   }

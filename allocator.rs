@@ -1,14 +1,14 @@
 use panic::{print, println, put_int};
 
-static mut allocator: GoodEnoughForNow = GoodEnoughForNow {current: 0 as *u8, size: 0};
+static mut allocator: GoodEnoughForNow = GoodEnoughForNow {current: 0 as *mut u8, size: 0};
 
-pub fn get_allocator() -> &mut Allocator {
+pub fn get_allocator() -> &'static mut Allocator {
   unsafe {
-    &mut allocator as &mut Allocator
+    &mut allocator as &'static mut Allocator
   }
 }
 
-pub fn set_allocator(start: *u8, stop: *u8) {
+pub fn set_allocator(start: *mut u8, stop: *mut u8) {
   unsafe {
     allocator = GoodEnoughForNow::new(start, (stop as uint) - (start as uint));
   }
@@ -16,22 +16,22 @@ pub fn set_allocator(start: *u8, stop: *u8) {
 
 pub trait Allocator {
 
-  fn allocate(&mut self, size: uint) -> Option<*u8>; //TODO(ryan) uint big enough to hold pointer?
+  fn allocate(&mut self, size: uint) -> Option<*mut u8>; //TODO(ryan) uint big enough to hold pointer?
   
-  fn free(&mut self, ptr: *u8);
+  fn free(&mut self, ptr: *mut u8);
  
-  fn debug(&mut self) -> (*u8, uint);
+  fn debug(&mut self) -> (*mut u8, uint);
  
 }
 
 struct GoodEnoughForNow {
-  current: *u8,
+  current: *mut u8,
   size: uint
 }
 
 impl GoodEnoughForNow {
 
-  fn new(start: *u8, size: uint) -> GoodEnoughForNow {
+  fn new(start: *mut u8, size: uint) -> GoodEnoughForNow {
     return GoodEnoughForNow {current: start, size: size}; 
   }
   
@@ -39,49 +39,49 @@ impl GoodEnoughForNow {
 
 impl Allocator for GoodEnoughForNow {
 
-  fn allocate(&mut self, size: uint) -> Option<*u8> {
+  fn allocate(&mut self, size: uint) -> Option<*mut u8> {
     if size >= self.size { //TODO(ryan) overflow
       //loop{}
       unsafe {print("no mem left :("); }
       None
     } else {
       let ptr = self.current;
-      self.current = ((self.current as uint) + size) as *u8;
+      self.current = ((self.current as uint) + size) as *mut u8;
       Some(ptr)
     }
   }
   
-  fn free(&mut self, ptr: *u8) {
+  fn free(&mut self, ptr: *mut u8) {
   }
   
   
-  fn debug(&mut self) -> (*u8, uint) {
+  fn debug(&mut self) -> (*mut u8, uint) {
     (self.current, self.size)
   }
 
   
 }
 
-pub fn malloc(size: uint) -> *u8 {
+pub fn malloc(size: uint) -> *mut u8 {
   unsafe {
     match allocator.allocate(size) {
     Some(ptr) => ptr,
-    _ => 0 as *u8
+    _ => 0 as *mut u8
     }
   }
 }
 
-pub fn free(ptr: *u8) {
+pub fn free(ptr: *mut u8) {
   unsafe {
     allocator.free(ptr)
   }
 }
 
 extern "C" {
-  fn memmove(dest: *u8, src: *u8, count: int);
+  fn memmove(dest: *mut u8, src: *mut u8, count: int);
 }
 
-pub fn realloc(old: *u8, size: uint) -> *u8 {
+pub fn realloc(old: *mut u8, size: uint) -> *mut u8 {
   let new = malloc(size);
   unsafe { memmove(new, old, size as int); } //TODO(ryan): size may be too large
   new

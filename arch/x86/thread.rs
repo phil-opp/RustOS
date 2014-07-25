@@ -5,25 +5,25 @@ use panic::*;
 
 pub struct Thread {
   stack_pointer: *mut u8,
-  base_pointer: *u8,
-  instruction_pointer: *u8
+  base_pointer: *mut u8,
+  instruction_pointer: *mut u8
 }
 
 extern "C" {
   
   fn stack_pointer() -> *mut u8;
   
-  fn instruction_pointer() -> *u8;
+  fn instruction_pointer() -> *mut u8;
   
-  fn base_pointer() -> *u8;
+  fn base_pointer() -> *mut u8;
   
-  fn set_pointers_and_jump(stack_pointer: *mut u8, base_pointer: *u8, instruction_pointer: *u8);
+  fn set_pointers_and_jump(stack_pointer: *mut u8, base_pointer: *mut u8, instruction_pointer: *mut u8);
     
 }
 
 impl Thread {
 
-  pub fn new(func: extern "C" fn() -> (), mem: *u8) -> Thread {
+  pub fn new(func: extern "C" fn() -> (), mem: *mut u8) -> Thread {
     unsafe {
       Thread { stack_pointer: transmute(mem), instruction_pointer: transmute(func), base_pointer: mem }
     }

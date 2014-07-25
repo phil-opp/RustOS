@@ -1,16 +1,12 @@
 use std::mem;
 use panic::*;
+use std::ptr::RawPtr;
+use std::mem::transmute;
 
 extern "C" {
   
-  fn lgdt(ptr: *GDTReal);
+  fn lgdt(ptr: *mut GDTReal);
 
-}
-
-extern "rust-intrinsic" {
-    pub fn transmute<T, U>(x: T) -> U;
-
-    fn offset<T>(dst: *T, offset: int) -> *T;
 }
 
 pub struct GDT {
@@ -43,7 +39,7 @@ impl GDT {
   
   pub fn enable(&mut self) {
     unsafe {
-      lgdt(&self.real);
+      lgdt(&mut self.real);
     }
   }
   

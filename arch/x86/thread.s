@@ -2,7 +2,7 @@
 .global stack_pointer
 .global set_pointers_and_jump
 .global base_pointer
-  
+
 # args: foo
 instruction_pointer:
   popl %eax
@@ -25,5 +25,4 @@ set_pointers_and_jump:
   movl 4(%ebx), %esp
   movl 8(%ebx), %ebp
   jmp *12(%ebx)
-  
   

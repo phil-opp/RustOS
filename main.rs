@@ -4,6 +4,7 @@
 #![allow(ctypes)]
 #![feature(intrinsics)]
 #![feature(globs)]
+#![feature(asm)]
 
 #[phase(plugin)]
 extern crate lazy_static;
@@ -58,11 +59,10 @@ pub extern "C" fn abort() -> ! {
 }
 
 #[no_mangle]
-pub extern "C" fn main(magic: u32, info: *multiboot_info) {
-  
+pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
   panic::init();
   unsafe {
-    set_allocator((0x100000*12) as *u8, 0x1c9c380 as *u8);
+    set_allocator((0x100000u32*12) as *mut u8, 0x1c9c380 as *mut u8);
     test_allocator();
     
     let mut cpu = cpu::CPU::new();
@@ -92,19 +92,20 @@ pub extern "C" fn main(magic: u32, info: *multiboot_info) {
 }
 
 #[no_mangle]
-pub extern "C" fn malloc(size: uint) -> *u8 {
+pub extern "C" fn malloc(size: uint) -> *mut u8 {
     allocator::malloc(size)
 }
 
 #[no_mangle]
-pub extern "C" fn free(ptr: *u8) {
+pub extern "C" fn free(ptr: *mut u8) {
   allocator::free(ptr)
 }
 
 #[no_mangle]
-pub extern "C" fn realloc(ptr: *u8, size: uint) -> *u8 {
+pub extern "C" fn realloc(ptr: *mut u8, size: uint) -> *mut u8 {
   allocator::realloc(ptr, size)
 }
+
 
 #[no_mangle]
 pub extern "C" fn __morestack() {

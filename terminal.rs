@@ -1,16 +1,11 @@
 use arch::vga;
 use panic::panic_message;
 use std::io::{Writer, IoResult};
+use std::mem::transmute;
+use std::ptr::RawPtr;
 
 // TODO(ryan): next line is breaking abstractions (but can't find a nice way to init it...)
 pub static mut TERMINAL: Terminal = Terminal { vga: vga::VGA { mapped: vga::VGA_START, max: vga::VGA_MAX }, current: Point {x: 0, y: 0} };
-
-
-extern "rust-intrinsic" {
-    pub fn transmute<T, U>(x: T) -> U;
-
-    fn offset<T>(dst: *T, offset: int) -> *T;
-}
 
 struct Point {
     x: uint,
@@ -99,13 +94,13 @@ impl Terminal {
 
     
   pub fn print(&mut self, s:  &'static str) {
-    let (ptr, buflen): (*u8, u32) = unsafe {
+    let (ptr, buflen): (*mut u8, u32) = unsafe {
       transmute(s)
     };
     let mut i = 0;
     while i < buflen {
       unsafe {
-	self.put_char(*offset(ptr, i as int)); 
+	self.put_char(*ptr.offset(i as int)); 
       }
       i += 1;
     }

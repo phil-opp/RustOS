@@ -177,7 +177,7 @@ impl multiboot_info {
    
    let mut current: u32 = self.mmap_addr;
    while (current < self.mmap_addr + self.mmap_length) {
-    let e: *multiboot_mmap_entry = transmute(current);
+    let e: *mut multiboot_mmap_entry = transmute(current);
     if ((*e).typ == 1) {
       print3ln("at ", current as u32, "");
       print3ln("  size: ", (*e).size, "");
