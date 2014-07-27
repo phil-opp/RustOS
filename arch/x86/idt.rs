@@ -1,7 +1,9 @@
 use std::mem;
 use panic::*;
 use std::ptr::RawPtr;
-use std::mem::transmute;
+use std::mem::{transmute, size_of};
+
+static IDT_SIZE: uint = 256;
 
 #[packed]
 struct IDTEntry {
@@ -10,16 +12,6 @@ struct IDTEntry {
   zero: u8,      // unused, set to 0
   type_attr: u8, // type and attributes, see below
   offset_upper: u16 // offset bits 16..31
-}
-
-extern "C" {
-
-  fn disable_interrupts();
-
-  fn lidt(ptr: *mut IDT);
-  
-  fn enable_interrupts();
-
 }
 
 impl IDTEntry {
@@ -31,55 +23,59 @@ impl IDTEntry {
     }
   }
   
+  fn no_op() -> IDTEntry {
+    IDTEntry::new(test)
+  }
+  
+}
+
+extern "C" {
+  fn no_op() -> ();
+  fn test() -> ();
 }
 
 #[packed]
-pub struct IDT {
+struct IDTLayout {
   limit: u16,
   base: u32
 }
 
-fn assert(b: bool) {
-  if !b {
-    // TODO(ryan) implement
-  }
+pub struct IDT {
+  table: [IDTEntry,..IDT_SIZE]
 }
 
 impl IDT {
 
   pub fn new() -> IDT {
-    unsafe { 
-      let mem: Vec<u8> = Vec::with_capacity(0x399 * 9);
-      let (raw, len): (u32, u32) = transmute(mem.as_slice()); 
-      IDT {limit: 0x399*9 as u16, base: raw + 6 } 
-    }
+    IDT { table: [IDTEntry::no_op(),..IDT_SIZE] }
   }
   
   pub fn add_entry(&mut self, index: u32, f: unsafe extern "C" fn() -> ()) {
-    assert(index < self.limit as u32);
-    unsafe {
-      let start: *mut IDTEntry = transmute(self.base);
-      let e: *mut IDTEntry = transmute(start.offset(index as int)); 
-      *e = IDTEntry::new(f);
-    }
+    self.table[index as uint] =  IDTEntry::new(f);
   }
   
-  pub fn enable(&mut self) {
-    unsafe {
-      lidt(self);
-    }
+  pub unsafe fn enable(&mut self) {
+    let base: u32 = transmute(&self.table);
+    let limit: u16 = (self.table.len() * size_of::<IDTEntry>()) as u16;
+    let layout = IDTLayout { base: base, limit: limit};
+    asm!("lidt ($0)"
+	:
+	:"{eax}"(layout)
+	:
+	:
+	:"volatile"); 
   }
   
   pub fn disable_interrupts() {
-    unsafe { disable_interrupts(); }
+    unsafe { asm!("cli" :::: "volatile"); }
   }
   
   pub unsafe fn enable_interrupts() {
-    enable_interrupts();
+    asm!("sti" :::: "volatile");
   }
   
   pub fn len(&self) -> uint {
-    return (self.limit / 8) as uint;
+    return self.table.len();
   }
  
 }
