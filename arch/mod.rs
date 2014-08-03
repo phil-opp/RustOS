@@ -17,3 +17,7 @@ mod idt;
 #[cfg(target_arch = "x86")]
 #[path="x86/gdt.rs"]
 mod gdt;
+
+#[cfg(target_arch = "x86")]
+#[path="x86/keyboard.rs"]
+pub mod keyboard;

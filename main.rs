@@ -19,14 +19,17 @@ use terminal::Terminal;
 use arch::vga;
 use arch::cpu;
 use panic::{print, println, put_int};
+use std::fmt;
+use arch::keyboard::Keyboard;
+use std::ty::Unsafe;
+use terminal::TERMINAL;
 
-mod arch;
+pub mod arch;
 mod terminal;
 mod panic;
 mod multiboot;
 mod allocator;
 mod scheduler;
-
 
 extern "rust-intrinsic" {
   pub fn transmute<T, U>(x: T) -> U;
@@ -35,7 +38,12 @@ extern "rust-intrinsic" {
 
 #[no_mangle]
 pub extern "C" fn callback() {
-  //println("    in an interrupt!");
+  println("    in an interrupt!");
+}
+
+#[no_mangle]
+pub extern "C" fn callback_i(u: u32) {
+  print("    callback_i!"); put_int(u); println("");
 }
 
 fn test_allocator() {
@@ -58,6 +66,10 @@ pub extern "C" fn abort() -> ! {
   }
 }
 
+fn put_char(c: u8) {
+  unsafe { TERMINAL.put_char(c); }
+}
+
 #[no_mangle]
 pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
   panic::init();
@@ -66,7 +78,8 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
     test_allocator();
     
     let mut cpu = cpu::CPU::new();
-    
+    //cpu.make_keyboard(put_char);
+  
     if magic != multiboot::MULTIBOOT_BOOTLOADER_MAGIC {
       panic::panic_message("Multiboot magic is invalid");
     } else {
@@ -76,17 +89,21 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
     }
         
     cpu.enable_interrupts();
+    
     println("Going to interrupt: ");
     cpu.test_interrupt();
     println("    back from interrupt!");
     
     let t2: &mut Writer = transmute(&panic::TERMINAL as &Writer);
+
     t2.write("Hello world from writer\n".as_bytes());
+    t2.write(concat!("con", "cat\n").as_bytes());
     
     //println("start scheduling?");
     //scheduler::thread_stuff(); // <-- currently broken :(
     
     println("Kernel is done!");
+    
     loop { }
   }
 }
@@ -106,6 +123,10 @@ pub extern "C" fn realloc(ptr: *mut u8, size: uint) -> *mut u8 {
   allocator::realloc(ptr, size)
 }
 
+#[no_mangle]
+pub extern "C" fn debug(s: &'static str, u: u32) {
+  print(s); put_int(u); println("");
+}
 
 #[no_mangle]
 pub extern "C" fn __morestack() {
