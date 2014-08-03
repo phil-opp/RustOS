@@ -5,7 +5,6 @@
 .global interrupt
 .global unified_handler
 .global register_all_callbacks
-.global callback_0 
 
 no_op:
 test:
@@ -42,7 +41,7 @@ interrupt:
       #call unified_handler
       
       call callback_i
-      addl 4, %esp
+      addl $4, %esp
       popa
       #sti
       iret
@@ -55,19 +54,9 @@ make_all_callbacks
   pushl $callback_\num\()
 .endm
 
-loop:
-  pushl (0x5)
-  jmp loop
-# arguments &mut IDT
-/*register_all_callbacks_0:
-pushl %ebp
-movl %esp, %ebp
-pushl callback_50
-addl 4, %esp
-leave
-ret
-*/
-
+# args: &mut IDT
+# the idea here is to use an as macro to fill in
+# all of the interrupts
 register_all_callbacks:
   pushl %ebp
   movl %esp, %ebp

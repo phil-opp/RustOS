@@ -55,21 +55,11 @@ impl IDT {
 
   pub fn new() -> IDT {
     let mut me = IDT { table: [IDTEntry::no_op(),..IDT_SIZE] };
-    unsafe { 
-      register_all_callbacks(&mut me);
-      debug("real me: ", transmute(&mut me));
-    }
+    unsafe { register_all_callbacks(&mut me); }
     me
   }
   
   pub fn add_entry(&mut self, index: u32, f: unsafe extern "C" fn() -> ()) {
-    unsafe { 
-      debug("index: ", index); 
-      debug("    f: ", transmute(f));
-      debug("    0: ", transmute(callback_0));
-      let me: &mut IDT = self;
-      debug("    self: ", transmute(me));
-    }    
     self.table[index as uint] =  IDTEntry::new(f);
   }
   

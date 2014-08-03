@@ -23,7 +23,7 @@ enum IRQ { // after remap
   CmosClock = 28,
   FreeOne = 29,
   FreeTwo = 30,
-  FreeThree11 = 31,
+  FreeThree = 31,
   PsMouse = 32,
   FPU = 33,
   PrimaryAta = 34,
@@ -35,6 +35,8 @@ extern "C" {
   fn test(n: u32);
   
   fn interrupt();
+
+  fn debug(s: &str, u: u32);
   
 }
 
@@ -71,8 +73,13 @@ impl CPU {
   }
   
   pub fn handle(&mut self, interrupt_number: u32) {
-    //test(interrupt_number);
-    //loop {}
+    match interrupt_number {
+      21 => match self.keyboard {
+	Some(mut k) => k.got_interrupted(),
+	None => unsafe { debug("no keyboard installed", 0) }
+      },
+      _ => unsafe { debug("interrupt with no handler: ", interrupt_number) }
+    }
   }
   
   pub unsafe fn register_irq(&mut self, irq: IRQ, handler: extern "C" fn () -> ()) {

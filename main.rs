@@ -43,7 +43,7 @@ pub extern "C" fn callback() {
 
 #[no_mangle]
 pub extern "C" fn callback_i(u: u32) {
-  print("    callback_i!"); put_int(u); println("");
+  print("    got interrupt number: "); put_int(u); println("");
 }
 
 fn test_allocator() {
