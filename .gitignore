@@ -6,3 +6,6 @@
 *.rlib
 *.kateproject*
 *.iso
+*.so
+*.a
+*.bc

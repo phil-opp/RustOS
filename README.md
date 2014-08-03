@@ -11,14 +11,11 @@ A simple, [language-based](https://en.wikipedia.org/wiki/Language-based_system) 
 ### Building:
 1. Dependencies:
   * qemu (emulator) or grub-mkrescue (run an iso on a VM or hardware)
-  * as (x86 32 bit)
-  * ld (x86 32 bit)
+  * as
+  * ld
   * rustc (version 0.11)
-
-2. Pull the repo `git clone https://github.com/ryanra/RustOS.git`
-
+2. Pull this repo `git clone https://github.com/ryanra/RustOS.git`
 3. Make sure to pull the submodules as well: `git submodule update --init --recursive`
-
 4. Run:
   * On qemu: `make run`
   * Or, make an iso `make iso` and run it on a VM or real hardware!
@@ -45,11 +42,10 @@ lacking.
   
 ### Short-term goals:
 1. Handle interrupts, specifically get the keyboard working.
-
-2. Multiprocessing
-  * A current (buggy) single-core implementation already exists
-  * Implement locking primitives and enable Rust's `sync` library
-
+2. Threading/Multiprocessing
+  * There's the beginnings of a single-core implementation, but it looks like `libgreen` can be slightly modified
+  to this end
+  * Implement locking primitives and enable Rust's `libsync` library
 3. Other architectures:
   * There's some beginnings of architecture-agnostic code, but it needs to be taken further
 
@@ -59,22 +55,18 @@ lacking.
   * This should include a modular and secure (least privledge) interface for adding your own drivers as well
 2. A filesystem
 3. Network stack
-4. Bring in a rustified core-utils port?
+4. Port `rustc` to RustOS
 5. That's probably it!
 
 ### Current issues:
-1. Linkage probelms: a stripped-down version of ``std'' is compiled from the Rust sources and is used as a crate. 
-Non-inlined functions aren't actually added to the object file and so it will cause problems when linking the final
-kernel. The current (horrible) solution is to inline used methods.
-
+1. ~Linkage probelms~ fixed!
 2. Threading is buggy and needs more attention.
-
 3. The current allocator never actually frees data and is just there to get `collections` working.
 
 ### Organization:
 1. Architecture-specific files (mostly) are now in arch/
-
-2. `std` had been stripped out of dependencies on an OS/libc and is usable (so, we can use stuff libcore, libcollection, librand)
+2. `std` had been stripped out of dependencies on an OS/libc and is usable (so, we can use stuff `libcore`, `libcollections`, `librand`)
+  * The idea is to move most of the functionality into a runtime library in a fork of rust so we can support `libstd`
 
 ### License
 [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) or the [MIT license](http://opensource.org/licenses/MIT), at your option

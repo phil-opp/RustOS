@@ -7,13 +7,13 @@ QEMU=qemu-system-i386
 TARGET=i686-unknown-linux-gnu
 DYLIBFLAG=--crate-type=dylib
 LIBFLAG=--crate-type=lib
-RUSTFLAGS=-g -O --cfg=kernel --target $(TARGET) -C link-args="--verbose" -L . -Z no-landing-pads
+RUSTFLAGS=-g --cfg=kernel --target $(TARGET) -L . -Z no-landing-pads
 
 all: boot.bin
 
 .SUFFIXES: .o .s .rlib .a .so
 
-.PHONY: clean run
+.PHONY: clean run debug vb
 
 .s.o:
 	$(AS) -g -o $@ $<
@@ -75,7 +75,8 @@ run: boot.bin
 	$(QEMU) -kernel $<
 
 debug: boot.bin
-	$(QEMU) -S -gdb tcp::3333 -kernel $<
+	$(QEMU) -S -gdb tcp::3333 -kernel $< &
+	gdb $< -ex "target remote :3333" -ex "break _start" -ex "c"
 
 %.o: arch/x86/%.s
 	$(AS) -g -o $@ $<
@@ -92,3 +93,6 @@ vb: iso
 	
 clean:
 	rm -f *.bin *.o *.img *.iso *.rlib *.a *.so
+	
+cleanproj:
+	rm -f *.bin *.o *.img *.iso
