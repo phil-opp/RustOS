@@ -53,7 +53,7 @@ impl CPU {
     let mut gdt = GDT::new();
     gdt.identity_map();
     gdt.enable();
-    
+
     PIC::master().remap_to(0x20);
     PIC::slave().remap_to(0x28);
   
@@ -66,10 +66,6 @@ impl CPU {
     //}
     idt.enable();
     CPU { gdt: gdt, idt: idt, keyboard: None}
-  }
-  
-  pub fn current() -> CPU {
-    unsafe { *CURRENT_CPU.get() }
   }
   
   pub fn handle(&mut self, interrupt_number: u32) {
@@ -107,7 +103,7 @@ impl CPU {
 
 #[no_mangle]
 pub extern "C" fn unified_handler(interrupt_number: u32) {
-  CPU::current().handle(interrupt_number);
+  unsafe { (*CURRENT_CPU.get()).handle(interrupt_number); }
 }
 
 #[no_mangle]
