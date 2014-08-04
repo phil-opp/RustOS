@@ -47,24 +47,31 @@ struct IDTLayout {
   base: u32
 }
 
+// TODO(ryan) this should be allocated for two reasons:
+// 1. It's really big (256 * 8 == 2 KB)
+// 2. Its location in memory needs to stay the same
 pub struct IDT {
-  table: [IDTEntry,..IDT_SIZE]
+  table: Vec<IDTEntry> 
 }
 
 impl IDT {
 
   pub fn new() -> IDT {
-    let mut me = IDT { table: [IDTEntry::no_op(),..IDT_SIZE] };
-    unsafe { register_all_callbacks(&mut me); }
+    let mut me = IDT { table: Vec::from_fn(IDT_SIZE, |_| IDTEntry::no_op() ) };
+    /*unsafe { 
+      raw = 
+      register_all_callbacks(&mut me.table.); 
+      
+    }*/
     me
   }
   
   pub fn add_entry(&mut self, index: u32, f: unsafe extern "C" fn() -> ()) {
-    self.table[index as uint] =  IDTEntry::new(f);
+    *self.table.get_mut(index as uint) =  IDTEntry::new(f);
   }
   
   pub unsafe fn enable(&mut self) {
-    let base: u32 = transmute(&self.table);
+    let (base, _): (u32, u32) = transmute(self.table.as_slice());
     let limit: u16 = (self.table.len() * size_of::<IDTEntry>()) as u16;
     let layout = IDTLayout { base: base, limit: limit};
     asm!("lidt ($0)"

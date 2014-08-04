@@ -81,6 +81,11 @@ impl CPU {
   pub unsafe fn register_irq(&mut self, irq: IRQ, handler: extern "C" fn () -> ()) {
     self.idt.add_entry(irq as u32, handler);
   }
+  
+  pub fn current() -> *mut CPU {
+    unsafe { CURRENT_CPU.get() }
+  }
+  
   /*
   pub fn make_keyboard(&mut self, callback: fn (u8) -> ()) {
     self.keyboard = Some(Keyboard::new(callback, Port {port_number: 0x64}, Port {port_number: 0x60}));
