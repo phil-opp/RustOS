@@ -58,11 +58,9 @@ impl IDT {
 
   pub fn new() -> IDT {
     let mut me = IDT { table: Vec::from_fn(IDT_SIZE, |_| IDTEntry::no_op() ) };
-    /*unsafe { 
-      raw = 
-      register_all_callbacks(&mut me.table.); 
-      
-    }*/
+    unsafe { 
+      register_all_callbacks(&mut me);
+    }
     me
   }
   
