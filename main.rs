@@ -67,7 +67,7 @@ pub extern "C" fn abort() -> ! {
 }
 
 fn put_char(c: u8) {
-  unsafe { TERMINAL.put_char(c); }
+  unsafe { TERMINAL.put_char(c);}
 }
 
 #[no_mangle]
@@ -78,7 +78,7 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
     test_allocator();
     
     let cpu = cpu::CPU::current(); //&mut cpu::CPU::new();
-    //cpu.make_keyboard(put_char);
+    (*cpu).make_keyboard(put_char);
   
     if magic != multiboot::MULTIBOOT_BOOTLOADER_MAGIC {
       panic::panic_message("Multiboot magic is invalid");

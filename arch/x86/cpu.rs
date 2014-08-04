@@ -12,22 +12,22 @@ lazy_static! {
 }
 
 enum IRQ { // after remap
-  Timer = 20,
-  Keyboard = 21,
-  Cascade = 22,
-  COM2 = 23,
-  COM1 = 24,
-  LPT2 = 25,
-  Floppy = 26,
-  LPT1 = 27,
-  CmosClock = 28,
-  FreeOne = 29,
-  FreeTwo = 30,
-  FreeThree = 31,
-  PsMouse = 32,
-  FPU = 33,
-  PrimaryAta = 34,
-  SecondaryAta = 35
+  Timer = 0x20,
+  Keyboard = 0x21,
+  Cascade = 0x22,
+  COM2 = 0x23,
+  COM1 = 0x24,
+  LPT2 = 0x25,
+  Floppy = 0x26,
+  LPT1 = 0x27,
+  CmosClock = 0x28,
+  FreeOne = 0x29,
+  FreeTwo = 0x2a,
+  FreeThree = 0x2b,
+  PsMouse = 0x2c,
+  FPU = 0x2d,
+  PrimaryAta = 0x2e,
+  SecondaryAta = 0x2f
 }
 
 extern "C" {
@@ -59,38 +59,38 @@ impl CPU {
   
     let mut idt = IDT::new();
     
-    let mut i: u32 = 0;
-    //while i < idt.len() as u32 {
-    //  idt.add_entry(i, test);
-    //  i += 1;
-    //}
     idt.enable();
     CPU { gdt: gdt, idt: idt, keyboard: None}
   }
   
   pub fn handle(&mut self, interrupt_number: u32) {
     match interrupt_number {
-      21 => match self.keyboard {
+      0x20 => (), // timer
+      0x21 => match self.keyboard {
 	Some(mut k) => k.got_interrupted(),
 	None => unsafe { debug("no keyboard installed", 0) }
       },
-      _ => unsafe { debug("interrupt with no handler: ", interrupt_number) }
+      _ => () //unsafe { debug("interrupt with no handler: ", interrupt_number) }
     }
+    self.acknowledge_irq(interrupt_number);
   }
   
   pub unsafe fn register_irq(&mut self, irq: IRQ, handler: extern "C" fn () -> ()) {
     self.idt.add_entry(irq as u32, handler);
   }
   
+  fn acknowledge_irq(&mut self, interrupt_number: u32) {
+    PIC::master().controlPort.write_u8(0x20); //TODO(ryan) ugly and only for master PIC
+  }
+  
   pub fn current() -> *mut CPU {
     unsafe { CURRENT_CPU.get() }
   }
   
-  /*
   pub fn make_keyboard(&mut self, callback: fn (u8) -> ()) {
     self.keyboard = Some(Keyboard::new(callback, Port {port_number: 0x64}, Port {port_number: 0x60}));
-    self.register_irq(Keyboard, )
-  }*/
+    //self.register_irq(Keyboard, )
+  }
   
   pub unsafe fn enable_interrupts(&mut self) {
     IDT::enable_interrupts();
@@ -163,8 +163,8 @@ impl Port {
 	    movb %al, $0" 
 	  :"=r"(ret) 
 	  :"r"(self.port_number)
-	  :
-	  : "dx", "al")
+	  : "dx", "al"
+	  :)
     }
     return ret;
   }

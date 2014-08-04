@@ -2,7 +2,7 @@ use std::io::Stream;
 use std::bitflags;
 use arch::cpu::Port;
 
-static KEY_CODE_TO_ASCII: &'static [u8] = b"?1234567890-=??qwertyuiop[]??asdfghjkl;'`?\\zxcvbnm,.?*? ?"; 
+static KEY_CODE_TO_ASCII: &'static [u8] = b"??1234567890-=??qwertyuiop[]\n?asdfghjkl;'`?\\zxcvbnm,./?*? ?"; 
 
 pub struct Keyboard {
   callback: fn (u8) -> (),
@@ -30,7 +30,7 @@ fn no_op(_: u8) {
 impl Keyboard {
 
   pub fn new(callback: fn (u8) -> (), control_port: Port, data_port: Port) -> Keyboard {
-    Keyboard { callback: no_op, control_port: control_port, data_port: data_port }
+    Keyboard { callback: callback, control_port: control_port, data_port: data_port }
   }
   
   pub fn register_callback(&mut self, callback: fn (u8) -> ()) {
@@ -47,7 +47,7 @@ impl Keyboard {
   }*/
   
   pub fn got_interrupted(&mut self) {
-    let keycode = self.control_port.read_u8().unwrap();
+    let keycode = self.data_port.read_u8().unwrap();
     match KEY_CODE_TO_ASCII.get(keycode as uint) {
       Some(ascii) => {
 	let func = self.callback;
@@ -57,4 +57,11 @@ impl Keyboard {
     }
   }
   
+  
+}
+
+extern "C" {
+
+  fn debug(s: &str, u: u32);
+
 }

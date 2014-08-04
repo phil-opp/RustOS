@@ -31,16 +31,16 @@ interrupt:
   callback_\num\():
 .endm
 
-.macro make_all_callbacks, num=10
+.macro make_all_callbacks, num=50
 .if \num+1
    make_callback %num 
       #cli
       #jmp loop
       pusha
       pushl $\num
-      #call unified_handler
+      call unified_handler
       
-      call callback_i
+      #call callback_i
       addl $4, %esp
       popa
       #sti
@@ -61,7 +61,7 @@ register_all_callbacks:
   pushl %ebp
   movl %esp, %ebp
   
-  .macro make_register_all_callbacks, num=10
+  .macro make_register_all_callbacks, num=50
     .if \num+1
 	  push_callback %num # arg3 (fn) to add_entry
 	  pushl $\num # arg2 (index) to add_entry
