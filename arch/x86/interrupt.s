@@ -7,6 +7,8 @@
 .global register_all_callbacks
 
 no_op:
+  iret
+
 test:
   pusha
   call callback
@@ -17,6 +19,8 @@ test:
 lgdt:
    mov 4(%esp), %eax
    lgdt (%eax)
+   ljmp $0x8,$out # set the cs register to 0x8
+out:
    ret
 
 # u8 -> ()

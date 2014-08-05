@@ -24,7 +24,7 @@ impl IDTEntry {
   }
   
   fn no_op() -> IDTEntry {
-    IDTEntry::new(test)
+    IDTEntry::new(no_op)
   }
   
 }
@@ -47,9 +47,6 @@ struct IDTLayout {
   base: u32
 }
 
-// TODO(ryan) this should be allocated for two reasons:
-// 1. It's really big (256 * 8 == 2 KB)
-// 2. Its location in memory needs to stay the same
 pub struct IDT {
   table: Vec<IDTEntry> 
 }

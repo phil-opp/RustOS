@@ -77,9 +77,6 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
     set_allocator((0x100000u32*12) as *mut u8, 0x1c9c380 as *mut u8);
     test_allocator();
     
-    let cpu = cpu::CPU::current(); //&mut cpu::CPU::new();
-    (*cpu).make_keyboard(put_char);
-  
     if magic != multiboot::MULTIBOOT_BOOTLOADER_MAGIC {
       panic::panic_message("Multiboot magic is invalid");
     } else {
@@ -88,6 +85,9 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
       (*info).multiboot_stuff();
     }
 
+    let cpu = cpu::CPU::current(); //&mut cpu::CPU::new();
+    (*cpu).make_keyboard(put_char);
+  
     (*cpu).enable_interrupts();
     
     println("Going to interrupt: ");
