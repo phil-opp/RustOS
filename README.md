@@ -7,13 +7,14 @@ A simple, [language-based](https://en.wikipedia.org/wiki/Language-based_system) 
 ### Current features:
   * Simple VGA for seeing output
   * Some Rust libraries (core, alloc, collections) already in
+  * Working (but limited) keyboard input
 
 ### Building:
 1. Dependencies:
   * qemu (emulator) or grub-mkrescue (run an iso on a VM or hardware)
   * as
   * ld
-  * rustc (version 0.11)
+  * rustc (latest)
 2. Pull this repo `git clone https://github.com/ryanra/RustOS.git`
 3. Make sure to pull the submodules as well: `git submodule update --init --recursive`
 4. Run:
@@ -26,26 +27,21 @@ you should be able to write your program, link against `std`, add a bootloader, 
 on bare metal. Of course, we'll need a little more to make the operating system extensible (specifically,
 an interface for adding drivers and libraries)
 
-2. *KISS* The OS is as simple as possible with as little as possible in it. Specifically, 
-  1. Rust type safety allows us to omit:
+2. The OS will be as simple as possible with as little as possible in it. Specifically, Rust type safety allows us to omit:
   * Paging. CPU memory protection is unecessary if you can only execute safe code
-  * Syscalls. You can only call functions exported in `std` (there is the issue of `unsafe` though, which
-will need to be considered at some point)
+  * Syscalls. You can only call functions exported in `std` (there is the issue of `unsafe` though, which will need to be considered at some point)
   * (This simplicitly may also end up scoring in terms of performance!)
 
-  2. Micro/Monolithic kernel is really irrelevant because everything is running in kernel mode and safety
+3. Micro/Monolithic kernel is really irrelevant because everything is running in kernel mode and safety
   is enforced by the language, so there's no need for user mode. That said, the goal is to keep this code 
   base small and enforce least-privledge with tight modules that also allow future additions.
 
-3. Security. That's the big advantage that Rust would bring to an OS and that current OSes are really
-lacking.
+3. Security. That's the big advantage that Rust would bring to an OS (i.e., memory safety) and that current OSes are really lacking.
   
 ### Short-term goals:
-1. Handle interrupts, specifically get the keyboard working.
+1. ~~Handle interrupts, specifically get the keyboard working.~~ done!
 2. Threading/Multiprocessing
-  * There's the beginnings of a single-core implementation, but it looks like `libgreen` can be slightly modified
-  to this end
-  * Implement locking primitives and enable Rust's `libsync` library
+  * There's the beginnings of a single-core implementation, but it looks like `libgreen` can be slightly modified to this end
 3. Other architectures:
   * There's some beginnings of architecture-agnostic code, but it needs to be taken further
 
@@ -59,7 +55,7 @@ lacking.
 5. That's probably it!
 
 ### Current issues:
-1. ~Linkage probelms~ fixed!
+1. ~~Linkage probelms~~ fixed!
 2. Threading is buggy and needs more attention.
 3. The current allocator never actually frees data and is just there to get `collections` working.
 
