@@ -20,6 +20,8 @@ lgdt:
    mov 4(%esp), %eax
    lgdt (%eax)
    ljmp $0x8,$out # set the cs register to 0x8
+   # TODO(ryan): probably a good idea to set the other seg registers
+   # here too and also to seperate setting them in their own function...
 out:
    ret
 
