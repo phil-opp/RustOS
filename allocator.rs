@@ -2,12 +2,6 @@ use panic::{print, println, put_int};
 
 static mut allocator: GoodEnoughForNow = GoodEnoughForNow {current: 0 as *mut u8, size: 0};
 
-pub fn get_allocator() -> &'static mut Allocator {
-  unsafe {
-    &mut allocator as &'static mut Allocator
-  }
-}
-
 pub fn set_allocator(start: *mut u8, stop: *mut u8) {
   unsafe {
     allocator = GoodEnoughForNow::new(start, (stop as uint) - (start as uint));
@@ -42,7 +36,7 @@ impl Allocator for GoodEnoughForNow {
   fn allocate(&mut self, size: uint) -> Option<*mut u8> {
     if size >= self.size { //TODO(ryan) overflow
       //loop{}
-      unsafe {print("no mem left :("); }
+      print("no mem left :(");
       None
     } else {
       let ptr = self.current;
@@ -51,7 +45,7 @@ impl Allocator for GoodEnoughForNow {
     }
   }
   
-  fn free(&mut self, ptr: *mut u8) {
+  fn free(&mut self, _: *mut u8) {
   }
   
   

@@ -1,5 +1,3 @@
-use std::io::Stream;
-use std::bitflags;
 use arch::cpu::Port;
 
 static KEY_CODE_TO_ASCII: &'static [u8] = b"??1234567890-=??qwertyuiop[]\n?asdfghjkl;'`?\\zxcvbnm,./?*? ?"; 
@@ -22,10 +20,6 @@ bitflags!(
     static parity_error = 0b10000000
   }
 )
-
-fn no_op(_: u8) {
-  
-}
 
 impl Keyboard {
 

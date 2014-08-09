@@ -1,10 +1,8 @@
-use std::mem;
-use panic::*;
-use std::ptr::RawPtr;
 use std::mem::{transmute, size_of};
 
 static IDT_SIZE: uint = 256;
 
+#[allow(dead_code)]
 #[packed]
 struct IDTEntry {
   offset_lower: u16, // offset bits 0..15
@@ -32,16 +30,13 @@ impl IDTEntry {
 extern "C" {
   fn no_op() -> ();
   
-  fn test() -> ();
-  
   fn register_all_callbacks(idt: &mut IDT);
-  
-  fn callback_0();
   
   fn debug(s: &str, u: u32) -> ();
 }
 
 #[packed]
+#[allow(dead_code)]
 struct IDTLayout {
   limit: u16,
   base: u32
@@ -84,9 +79,5 @@ impl IDT {
   pub unsafe fn enable_interrupts() {
     asm!("sti" :::: "volatile");
   }
-  
-  pub fn len(&self) -> uint {
-    return self.table.len();
-  }
- 
+
 }

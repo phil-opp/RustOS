@@ -24,7 +24,6 @@ impl Terminal {
   }
 
   pub fn new(vga: vga::VGA) -> Terminal {
-    let (x, y) = (vga.x_max(), vga.y_max());
     Terminal { vga: vga, current: Point {x: 0, y: 0} }
   }
 

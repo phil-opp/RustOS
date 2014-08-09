@@ -13,15 +13,8 @@ use std::vec;
 
 use multiboot::multiboot_info;
 use allocator::set_allocator;
-use allocator::get_allocator;
-use panic::print;
-use terminal::Terminal;
-use arch::vga;
 use arch::cpu;
 use panic::{print, println, put_int};
-use std::fmt;
-use arch::keyboard::Keyboard;
-use std::ty::Unsafe;
 use terminal::TERMINAL;
 
 pub mod arch;
@@ -96,8 +89,8 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
     
     let t2: &mut Writer = transmute(&panic::TERMINAL as &Writer);
 
-    t2.write("Hello world from writer\n".as_bytes());
-    t2.write(concat!("con", "cat\n").as_bytes());
+    t2.write("Hello world from writer\n".as_bytes()).ok();
+    t2.write(concat!("con", "cat\n").as_bytes()).ok();
     
     //println("start scheduling?");
     //scheduler::thread_stuff(); // <-- currently broken :(

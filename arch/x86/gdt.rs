@@ -1,6 +1,3 @@
-use std::mem;
-use panic::*;
-use std::ptr::RawPtr;
 use std::mem::{transmute, size_of};
 
 static GDT_SIZE: uint = 3;
@@ -69,9 +66,7 @@ impl GDT {
   
   pub fn new() -> GDT {
     let table = Vec::with_capacity(GDT_SIZE);
-    unsafe {
-      GDT {table: table} 
-    }
+    GDT {table: table} 
   }
   
   pub fn add_entry(&mut self, base: u32, limit: u32, typ: u8) {

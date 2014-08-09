@@ -1,17 +1,16 @@
 use arch::idt::IDT;
 use arch::gdt::GDT;
 
-use std::io::{Stream, IoResult};
+use std::io::IoResult;
 use arch::keyboard::Keyboard;
 
-use std::one::{ONCE_INIT, Once};
 use std::ty::Unsafe;
 
 lazy_static! {
   static ref CURRENT_CPU: Unsafe<CPU> = Unsafe::new(CPU::new());
 }
 
-enum IRQ { // after remap
+pub enum IRQ { // after remap
   Timer = 0x20,
   Keyboard = 0x21,
   Cascade = 0x22,
@@ -31,8 +30,6 @@ enum IRQ { // after remap
 }
 
 extern "C" {
-  
-  fn test(n: u32);
   
   fn interrupt();
 
@@ -80,7 +77,7 @@ impl CPU {
   }
   
   fn acknowledge_irq(&mut self, interrupt_number: u32) {
-    PIC::master().controlPort.write_u8(0x20); //TODO(ryan) ugly and only for master PIC
+    PIC::master().controlPort.write_u8(0x20).ok(); //TODO(ryan) ugly and only for master PIC
   }
   
   pub fn current() -> *mut CPU {
@@ -134,13 +131,13 @@ impl PIC {
   }
   
   unsafe fn remap_to(&mut self, start: u8) {
-    let ICW1 = 0x11;
-    let ICW4 = 0x1;
+    let icw1 = 0x11;
+    let icw4 = 0x1;
     let enable_all = 0x00;
     let typ = if self.is_master { 0x2 } else { 0x4 };
     
-    self.controlPort.write_u8(ICW1);
-    self.maskPort.write(&[start, typ, ICW4, enable_all]);
+    self.controlPort.write_u8(icw1).ok();
+    self.maskPort.write(&[start, typ, icw4, enable_all]).ok();
   }
 
 }
@@ -191,8 +188,8 @@ impl Reader for Port {
   }
   
   fn read(&mut self, buf: &mut [u8]) -> IoResult<uint> {
-    for &mut el in buf.iter() {
-      el = self.in_b();
+    for el in buf.mut_iter() {
+      *el = self.in_b();
     }
     Ok(buf.len())
   }

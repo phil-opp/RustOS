@@ -1,6 +1,5 @@
 use std::mem::transmute;
 
-use allocator::malloc;
 use panic::*;
 
 pub struct Thread {
