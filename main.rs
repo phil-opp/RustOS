@@ -97,7 +97,9 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
     
     println("Kernel is done!");
     
-    loop { }
+    loop {
+      //(*cpu).idle()
+    }
   }
 }
 

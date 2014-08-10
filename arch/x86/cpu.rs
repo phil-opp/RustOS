@@ -76,6 +76,10 @@ impl CPU {
     self.idt.add_entry(irq as u32, handler);
   }
   
+  pub unsafe fn idle(&mut self) {
+    asm!("hlt" ::::)
+  }
+  
   fn acknowledge_irq(&mut self, interrupt_number: u32) {
     PIC::master().controlPort.write_u8(0x20).ok(); //TODO(ryan) ugly and only for master PIC
   }
