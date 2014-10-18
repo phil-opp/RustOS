@@ -202,7 +202,7 @@ unsafe fn print3ln(first: &'static str , second: u32, last: &'static str) {
   println(last);
 }
   
-#[packed]
+#[repr(packed)]
 struct multiboot_mmap_entry {
   size: u32,
   addr: u64,
