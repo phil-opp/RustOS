@@ -63,6 +63,14 @@ fn put_char(c: u8) {
   unsafe { TERMINAL.put_char(c);}
 }
 
+lazy_static! {
+  static ref TEST: vec::Vec<&'static str> = {
+    let mut v = vec::Vec::new();
+    v.push("hi from lazy sttaic");
+    v
+  };
+}
+
 #[no_mangle]
 pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
   panic::init();
@@ -77,12 +85,13 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
       put_int(info as u32);
       (*info).multiboot_stuff();
     }
-
-    let cpu = cpu::CPU::current(); //&mut cpu::CPU::new();
-    (*cpu).make_keyboard(put_char);
-  
-    (*cpu).enable_interrupts();
     
+    println((*TEST)[0]);
+    let cpu = cpu::CPU::current(); //&mut cpu::CPU::new();
+    
+    (*cpu).make_keyboard(put_char);
+    
+    (*cpu).enable_interrupts();
     println("Going to interrupt: ");
     (*cpu).test_interrupt();
     println("    back from interrupt!");

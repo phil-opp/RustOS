@@ -5,10 +5,12 @@ static GDT_SIZE: uint = 3;
 extern "C" {
   
   fn lgdt(ptr: *mut GDTReal);
+  
+  fn debug(s: &'static str, u: u32);
 
 }
 
-#[packed]
+#[repr(packed)]
 struct GDTEntry {
   bytes: [u8,..8]
 }
@@ -48,15 +50,19 @@ impl GDTEntry {
     target[5] = typ;
     return GDTEntry { bytes: target } 
   }
+  
+  fn null() -> GDTEntry {
+    GDTEntry { bytes: [0,..8] } 
+  }
 
 }
 
-#[packed]
+#[repr(packed)]
 pub struct GDT {
   table: Vec<GDTEntry>
 }
 
-#[packed]
+#[repr(packed)]
 struct GDTReal {
   limit: u16,
   base: u32
@@ -70,7 +76,10 @@ impl GDT {
   }
   
   pub fn add_entry(&mut self, base: u32, limit: u32, typ: u8) {
-    let e = GDTEntry::new(limit, base, typ);
+    self.add(GDTEntry::new(limit, base, typ));
+  }
+  
+  pub fn add(&mut self, e: GDTEntry) {
     self.table.push(e);
   }
   
@@ -79,12 +88,15 @@ impl GDT {
       let limit: u16 = (GDT_SIZE*size_of::<GDTEntry>()) as u16;
       let (base, _): (u32, u32) = transmute(self.table.as_slice());
       let mut real = GDTReal { limit: limit, base: base };
+      debug("limit: ", limit as u32);
+      debug("base: ", base);
+      
       lgdt(&mut real);
     }
   }
   
   pub fn identity_map(&mut self) {
-    self.add_entry(0, 0, 0);                     // Selector 0x00 cannot be used
+    self.add(GDTEntry::null());                     // Selector 0x00 cannot be used
     self.add_entry(0, 0xffffffff, 0x9A);         // Selector 0x08 will be our code
     self.add_entry(0, 0xffffffff, 0x92);         // Selector 0x10 will be our data
     //gdt.add_entry( = {.base=&myTss, .limit=sizeof(myTss), .type=0x89}; // You can use LTR(0x18)

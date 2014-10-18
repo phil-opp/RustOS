@@ -12,7 +12,7 @@ lazy_static! {
 
 pub enum IRQ { // after remap
   Timer = 0x20,
-  Keyboard = 0x21,
+  PS2Keyboard = 0x21,
   Cascade = 0x22,
   COM2 = 0x23,
   COM1 = 0x24,
@@ -48,9 +48,10 @@ impl CPU {
 
   pub unsafe fn new() -> CPU {
     let mut gdt = GDT::new();
+    
     gdt.identity_map();
     gdt.enable();
-
+    
     PIC::master().remap_to(0x20);
     PIC::slave().remap_to(0x28);
   

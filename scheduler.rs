@@ -8,17 +8,17 @@ use arch::thread::Thread;
 use panic::*;
 use allocator::malloc;
 
-struct Scheduler {
-  queue: Box<Deque<Thread>>
+struct Scheduler<'a> {
+  queue: Box<Deque<Thread> + 'a>
 }
 
 lazy_static! {
-  static ref SCHEDULER: Unsafe<Scheduler> = Unsafe::new(Scheduler::new());
+  static ref SCHEDULER: Unsafe<Scheduler<'static>> = Unsafe::new(Scheduler::new());
 }
   
-impl Scheduler {
+impl<'a> Scheduler<'a> {
   
-  pub fn new() -> Scheduler {
+  pub fn new<'a>() -> Scheduler<'a> {
     let list: DList<Thread> = DList::new();
     Scheduler { queue: box list as Box<Deque<Thread>> }
   }
@@ -56,8 +56,6 @@ impl Scheduler {
   }
 
 }
-
-impl Share for Scheduler { }
 
 fn inner_thread_test(arg: uint) {
   print("    got int: "); put_int(arg as u32); println("");

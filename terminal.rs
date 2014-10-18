@@ -57,7 +57,8 @@ impl Terminal {
       })
     });
     range(0, self.vga.x_max(), |i| {
-      self.vga.put((i, self.vga.y_max() - 1), 'a' as u8, vga::Black, vga::Black);
+      let y_max = self.vga.y_max();
+      self.vga.put((i, y_max - 1), 'a' as u8, vga::Black, vga::Black);
     });
   }
   
@@ -143,8 +144,8 @@ fn wtoc(i: u32) -> (u8, u8, u8, u8, u8, u8, u8, u8) {
 
 fn hex(i: u8) -> u8 {
   match i {
-    0..9 => 0x30 + i,
-    0xA..0xF => 0x41 + (i - 0xA),
+    0...9 => 0x30 + i,
+    0xA...0xF => 0x41 + (i - 0xA),
     _ => 122 // 'z'
   }
 }

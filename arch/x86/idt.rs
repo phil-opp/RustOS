@@ -3,7 +3,7 @@ use std::mem::{transmute, size_of};
 static IDT_SIZE: uint = 256;
 
 #[allow(dead_code)]
-#[packed]
+#[repr(packed)]
 struct IDTEntry {
   offset_lower: u16, // offset bits 0..15
   selector: u16, // a code segment selector in GDT or LDT
@@ -35,7 +35,7 @@ extern "C" {
   fn debug(s: &str, u: u32) -> ();
 }
 
-#[packed]
+#[repr(packed)]
 #[allow(dead_code)]
 struct IDTLayout {
   limit: u16,

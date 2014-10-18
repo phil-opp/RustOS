@@ -19,9 +19,16 @@ test:
 lgdt:
    mov 4(%esp), %eax
    lgdt (%eax)
-   ljmp $0x8,$out # set the cs register to 0x8
-   # TODO(ryan): probably a good idea to set the other seg registers
-   # here too and also to seperate setting them in their own function...
+   
+   #reload segment registers
+   movw $0x10, %ax # 0x10 is data segment
+   movw %ax, %ds
+   movw %ax, %es
+   movw %ax, %fs
+   movw %ax, %gs
+   movw %ax, %ss
+   
+   ljmp $0x8,$out # set the cs register to 0x8 (code segment)
 out:
    ret
 
