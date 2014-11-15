@@ -87,7 +87,7 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
     }
     
     println((*TEST)[0]);
-    let cpu = cpu::CPU::current(); //&mut cpu::CPU::new();
+    let cpu = cpu::CPU::current();
     
     (*cpu).make_keyboard(put_char);
     
@@ -107,7 +107,7 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
     println("Kernel is done!");
     
     loop {
-      //(*cpu).idle()
+      (*cpu).idle()
     }
   }
 }

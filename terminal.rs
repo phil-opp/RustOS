@@ -94,24 +94,14 @@ impl Terminal {
 
     
   pub fn print(&mut self, s:  &'static str) {
-    let (ptr, buflen): (*mut u8, u32) = unsafe {
-      transmute(s)
-    };
-    let mut i = 0;
-    while i < buflen {
-      unsafe {
-	self.put_char(*ptr.offset(i as int)); 
-      }
-      i += 1;
+    for c in s.chars() {
+      self.put_char(c as u8);
     }
   }
   
   pub fn println(&mut self, s:  &'static str) {
     self.print(s);
     self.put_char('\n' as u8);
-    //for c in s {
-    //  self.put_char(s);
-    //}
   }
   
 }
