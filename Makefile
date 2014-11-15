@@ -5,7 +5,7 @@ LD=ld -melf_i386 -nostdlib
 RUSTC=rustc
 QEMU=qemu-system-i386
 TARGET=i686-unknown-linux-gnu
-DYLIBFLAG=--crate-type=dylib
+DYLIBFLAG=--crate-type=dylib --emit=obj
 LIBFLAG=--crate-type=lib
 RUSTFLAGS=-g --cfg=kernel --target $(TARGET) -L . -Z no-landing-pads
 
@@ -13,7 +13,7 @@ all: boot.bin
 
 .SUFFIXES: .o .s .rlib .a .so
 
-.PHONY: clean run debug vb
+.PHONY: clean cleanproj run debug vb
 
 .s.o:
 	$(AS) -g -o $@ $<
@@ -63,7 +63,6 @@ librustrt.rlib: rust/src/librustrt/lib.rs libcore.rlib liballoc.rlib liblibc.rli
 libunicode.rlib: rust/src/libunicode/lib.rs libcore.rlib
 	$(RUSTC) $< $(RUSTFLAGS) $(LIBFLAG)
 	$(RUSTC) $< $(RUSTFLAGS) $(DYLIBFLAG)
-
 	
 main.o: main.rs libstd.rlib liballoc.rlib libcore.rlib libcollections.rlib liblazy_static.rlib
 	$(RUSTC) $< -o $@ --emit obj $(RUSTFLAGS) $(LIBFLAG)
@@ -81,8 +80,8 @@ debug: boot.bin
 %.o: arch/x86/%.s
 	$(AS) -g -o $@ $<
 	
-boot.bin: linker.ld main.o boot.o interrupt.o thread.o rlibc.o dependencies.o
-	$(LD) -o $@ -T $^  *.so
+boot.bin: linker.ld main.o boot.o interrupt.o thread.o rlibc.o dependencies.o *.o
+	$(LD) -o $@ -T $^
 
 iso: boot.bin
 	cp boot.bin isodir/boot/
@@ -91,8 +90,8 @@ iso: boot.bin
 vb: iso
 	virtualbox --debug --startvm rustos
 	
-clean:
-	rm -f *.bin *.o *.img *.iso *.rlib *.a *.so
+clean: cleanproj
+	rm -f *.rlib *.a *.so
 	
 cleanproj:
-	rm -f *.bin *.o *.img *.iso
+	rm -f *.bin main.o *.img *.iso

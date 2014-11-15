@@ -5,17 +5,33 @@
 #![feature(intrinsics)]
 #![feature(globs)]
 #![feature(asm)]
+#![feature(macro_rules)]
 
 #[phase(plugin)]
 extern crate lazy_static;
 
 use std::vec;
+use std::string;
+use std::str;
 
 use multiboot::multiboot_info;
 use allocator::set_allocator;
 use arch::cpu;
 use panic::{print, println, put_int};
 use terminal::TERMINAL;
+use pci::Pci;
+
+
+macro_rules! debug( // TODO(ryan): ugly place for this, but want it accessible by the modules
+    ($($arg:tt)*) => (
+        unsafe {
+          use terminal::TERMINAL;
+	  TERMINAL.write(format!("[{}:{}]:    ", file!(), line!()).as_bytes());
+	  TERMINAL.write(format!($($arg)*).as_bytes());
+	  TERMINAL.write("\n".as_bytes());
+	}
+    )
+)
 
 pub mod arch;
 mod terminal;
@@ -23,6 +39,7 @@ mod panic;
 mod multiboot;
 mod allocator;
 mod scheduler;
+mod pci;
 
 extern "rust-intrinsic" {
   pub fn transmute<T, U>(x: T) -> U;
@@ -100,9 +117,13 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
 
     t2.write("Hello world from writer\n".as_bytes()).ok();
     t2.write(concat!("con", "cat\n").as_bytes()).ok();
+    t2.write(format!("for{} {}\n", "mat", 2i).as_bytes()).ok();
     
+    debug!("debugging :)");
     //println("start scheduling?");
     //scheduler::thread_stuff(); // <-- currently broken :(
+    
+    //pci_stuff();
     
     println("Kernel is done!");
     
@@ -110,6 +131,16 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
       (*cpu).idle()
     }
   }
+}
+
+fn pci_stuff() {
+  let address_port = cpu::Port::new(0xcf8);
+  let data_port = cpu::Port::new(0xcfc);
+  let mut pci = Pci::new(box address_port, box data_port);
+  pci.init();
+  let (not_found, found) = pci.check_devices();
+  debug("PCI --> not found", not_found);
+  debug("PCI --> found", found);
 }
 
 #[no_mangle]
