@@ -47,27 +47,27 @@ impl Terminal {
   
   
   fn scroll(&mut self) {
-    range(1, self.vga.y_max(), |j| {
-      range(0, self.vga.x_max(), |i| {
+    for j in range(1, self.vga.y_max()) {
+      for i in range(0, self.vga.x_max()) {
 	let (chr, fg, bg) = match self.vga.get((i, j)) {
 	  Some(tup) => tup,
 	  None => panic_message("error in Terminal.scroll")
 	};
 	self.vga.put((i, j - 1), chr, fg, bg);
-      })
-    });
-    range(0, self.vga.x_max(), |i| {
+      }
+    }
+    for i in range(0, self.vga.x_max()) {
       let y_max = self.vga.y_max();
       self.vga.put((i, y_max - 1), 'a' as u8, vga::Black, vga::Black);
-    });
+    }
   }
   
   pub fn clear_screen(&mut self) {
-    range(0, self.vga.x_max(), |i| {
-	range(0, self.vga.y_max(), |j| {
+    for i in range(0, self.vga.x_max()) {
+	for j in range(0, self.vga.y_max()) {
 	  self.vga.put((i, j), 0 as u8, vga::Black, vga::Black);
-	});
-    });
+	}
+    }
   }
     
   pub fn print(&mut self, s:  &'static str) {
@@ -92,12 +92,4 @@ impl Writer for Terminal {
     Ok(())
   }
   
-}
-
-fn range(lo: uint, hi: uint, it: |uint| -> ()) {
-    let mut iter = lo;
-    while iter < hi {
-	it(iter);
-	iter += 1;
-    }
 }

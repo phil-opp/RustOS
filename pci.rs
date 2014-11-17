@@ -1,5 +1,3 @@
-#[macro_escape]
-
 use std::io::{Stream, IoResult, IoError};
 use std::mem::transmute;
 use arch::cpu::Port;
@@ -11,7 +9,7 @@ pub struct Pci {
 
 impl Pci {
 
-  pub fn new<'a>(address_port: Port, data_port: Port) -> Pci {
+  pub fn new(address_port: Port, data_port: Port) -> Pci {
     Pci { address_port: address_port, data_port: data_port }
   }
   
