@@ -26,9 +26,9 @@ macro_rules! debug( // TODO(ryan): ugly place for this, but want it accessible b
     ($($arg:tt)*) => (
         unsafe {
           use terminal::TERMINAL;
-	  TERMINAL.write(format!("[{}:{}]:    ", file!(), line!()).as_bytes());
-	  TERMINAL.write(format!($($arg)*).as_bytes());
-	  TERMINAL.write("\n".as_bytes());
+	  TERMINAL.write(format!("[{}:{} DEBUG]:    ", file!(), line!()).as_bytes()).ok();
+	  TERMINAL.write(format!($($arg)*).as_bytes()).ok();
+	  TERMINAL.write("\n".as_bytes()).ok();
 	}
     )
 )

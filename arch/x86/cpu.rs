@@ -160,29 +160,44 @@ impl Port {
   fn in_b(&mut self) -> u8 {
     let mut ret: u8;
     unsafe {
-      asm!("movw $1, %dx
-	    inb %dx, %al
-	    movb %al, $0" 
-	  :"=r"(ret) 
-	  :"r"(self.port_number)
-	  : "dx", "al"
-	  :)
+      asm!("inb $1, $0" : "={al}"(ret) :"{dx}"(self.port_number) ::)
     }
     return ret;
   }
   
   fn out_b(&mut self, byte: u8) {
     unsafe {
-      asm!("movw $0, %dx
-	    movb $1, %al
-	    outb %al, %dx" 
-	  : 
-	  :"r"(self.port_number), "r"(byte)
-	  : "dx", "al"
-	  :)
+      asm!("outb $1, $0" :: "{dx}"(self.port_number), "{al}"(byte) ::)
     }
   }
-
+  
+  fn out_w(&mut self, word: u16) {
+    unsafe {
+      asm!("outw $1, $0" ::"{dx}"(self.port_number), "{ax}"(word) ::)
+    }
+  }
+  
+  fn in_w(&mut self) -> u16 {
+    let mut ret: u16;
+    unsafe {
+      asm!("inw $1, $0" : "={ax}"(ret) :"{dx}"(self.port_number)::)
+    }
+    ret
+  }
+  
+  fn out_l(&mut self, long: u32) {
+    unsafe {
+      asm!("outl $1, $0" ::"{dx}"(self.port_number), "{eax}"(long) ::)
+    }
+  }
+  
+  fn in_l(&mut self) -> u32 {
+    let mut ret: u32;
+    unsafe {
+      asm!("inl $1, $0" : "={eax}"(ret) :"{dx}"(self.port_number)::)
+    }
+    ret
+  }
 
 }
 
