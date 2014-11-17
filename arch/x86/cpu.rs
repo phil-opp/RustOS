@@ -198,6 +198,10 @@ impl Port {
     }
     ret
   }
+  
+  pub fn io_wait() {
+    Port::new(0x80).out_b(0);
+  }
 
 }
 

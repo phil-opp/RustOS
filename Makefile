@@ -71,7 +71,7 @@ rlibc.o: rust/src/librlibc/lib.rs
 	$(RUSTC) $< -o $@ --emit obj $(RUSTFLAGS) $(LIBFLAG)
 		
 run: boot.bin
-	$(QEMU) -kernel $<
+	$(QEMU) -device rtl8139 -kernel $<
 
 debug: boot.bin
 	$(QEMU) -S -gdb tcp::3333 -kernel $< &

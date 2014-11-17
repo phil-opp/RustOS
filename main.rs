@@ -33,6 +33,15 @@ macro_rules! debug( // TODO(ryan): ugly place for this, but want it accessible b
     )
 )
 
+macro_rules! kassert(
+  ($b: expr) => (
+        if (!$b) {
+	  debug!("assertion failed {}", stringify!(b))
+	  loop {}
+        }
+    )
+)
+
 pub mod arch;
 mod terminal;
 mod panic;
@@ -122,7 +131,7 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
     //println("start scheduling?");
     //scheduler::thread_stuff(); // <-- currently broken :(
     
-    // pci_stuff();
+    pci_stuff();
     
     println("Kernel is done!");
     
@@ -138,8 +147,6 @@ fn pci_stuff() {
   let mut pci = Pci::new(address_port, data_port);
   pci.init();
   let (not_found, found) = pci.check_devices();
-  debug("PCI --> not found", not_found);
-  debug("PCI --> found", found);
 }
 
 #[no_mangle]

@@ -181,7 +181,7 @@ impl multiboot_info {
     if ((*e).typ == 1) {
       debug!("at 0x{:x}", current)
       debug!("  size: 0x{:x}", (*e).size)
-      debug!("  addr: 0x{:x}", (*e).addr as u32) // TODO(ryan): if 64-bit arg, then crash
+      debug!("  addr: 0x{:x}", (*e).addr as u32) // TODO(ryan): if 64-bit arg, then crashes !
       debug!("  length: 0x{:x}", (*e).len as u32)
       debug!("  type: 0x{:x}", (*e).typ)
       
