@@ -2,16 +2,16 @@
 
 use std::io::{Stream, IoResult, IoError};
 use std::mem::transmute;
-use panic::{println, put_int};
+use arch::cpu::Port;
 
-pub struct Pci<'a> {
-  address_port: Box<Stream + 'a>,
-  data_port: Box<Stream + 'a>
+pub struct Pci {
+  address_port: Port,
+  data_port: Port
 }
 
-impl<'a> Pci<'a> {
+impl Pci {
 
-  pub fn new<'a>(address_port: Box<Stream>, data_port: Box<Stream>) -> Pci<'a> {
+  pub fn new<'a>(address_port: Port, data_port: Port) -> Pci {
     Pci { address_port: address_port, data_port: data_port }
   }
   
@@ -19,11 +19,11 @@ impl<'a> Pci<'a> {
   
   pub fn read(&mut self, bus: u8, device: u8, function: u8, offset: u8) -> IoResult<u32> {
     if (function & 0x03 != 0x00) || (device >= 0x1 << 5) || (function >= 0x1 << 3)  {
-      Ok(0 as u32)
+      Ok(1 as u32)
     } else {
       let address: u32 = (0x1 as u32 << 31) | (bus as u32 << 16) | (device as u32 << 11) | (function as u32 << 8) | offset as u32;
-      self.address_port.write_le_u32(address);
-      self.address_port.read_le_u32()
+      self.address_port.out_l(address);
+      Ok(self.address_port.in_l())
     }
   }
   
@@ -35,7 +35,7 @@ impl<'a> Pci<'a> {
 	if vendor == 0xffff {
 	  no_device_count += 1;
 	}
-	put_int(device_id as u32); println(" <-dev");
+	debug!("vendor id: 0x{:x}", vendor);
       }
     }
     debug!("debugging :)");

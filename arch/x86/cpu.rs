@@ -157,7 +157,7 @@ impl Port {
     Port { port_number: number }
   }
     
-  fn in_b(&mut self) -> u8 {
+  pub fn in_b(&mut self) -> u8 {
     let mut ret: u8;
     unsafe {
       asm!("inb $1, $0" : "={al}"(ret) :"{dx}"(self.port_number) ::)
@@ -165,19 +165,19 @@ impl Port {
     return ret;
   }
   
-  fn out_b(&mut self, byte: u8) {
+  pub fn out_b(&mut self, byte: u8) {
     unsafe {
       asm!("outb $1, $0" :: "{dx}"(self.port_number), "{al}"(byte) ::)
     }
   }
   
-  fn out_w(&mut self, word: u16) {
+  pub fn out_w(&mut self, word: u16) {
     unsafe {
       asm!("outw $1, $0" ::"{dx}"(self.port_number), "{ax}"(word) ::)
     }
   }
   
-  fn in_w(&mut self) -> u16 {
+  pub fn in_w(&mut self) -> u16 {
     let mut ret: u16;
     unsafe {
       asm!("inw $1, $0" : "={ax}"(ret) :"{dx}"(self.port_number)::)
@@ -185,13 +185,13 @@ impl Port {
     ret
   }
   
-  fn out_l(&mut self, long: u32) {
+  pub fn out_l(&mut self, long: u32) {
     unsafe {
       asm!("outl $1, $0" ::"{dx}"(self.port_number), "{eax}"(long) ::)
     }
   }
   
-  fn in_l(&mut self) -> u32 {
+  pub fn in_l(&mut self) -> u32 {
     let mut ret: u32;
     unsafe {
       asm!("inl $1, $0" : "={eax}"(ret) :"{dx}"(self.port_number)::)

@@ -58,7 +58,7 @@ impl<'a> Scheduler<'a> {
 }
 
 fn inner_thread_test(arg: uint) {
-  print("    got int: "); put_int(arg as u32); println("");
+  debug!("    got int: {}", arg);
 }
 
 extern "C" fn test_thread() {

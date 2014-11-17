@@ -41,7 +41,7 @@ impl Thread {
   }
   
   pub fn debug(&self) {
-    print("eip is "); put_int(self.instruction_pointer as u32); println("");
+    debug!("eip is 0x{:x}", self.instruction_pointer as u32);
     wait();
   }
    

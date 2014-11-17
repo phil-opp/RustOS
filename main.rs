@@ -17,7 +17,7 @@ use std::str;
 use multiboot::multiboot_info;
 use allocator::set_allocator;
 use arch::cpu;
-use panic::{print, println, put_int};
+use panic::{print, println};
 use terminal::TERMINAL;
 use pci::Pci;
 
@@ -53,7 +53,7 @@ pub extern "C" fn callback() {
 
 #[no_mangle]
 pub extern "C" fn callback_i(u: u32) {
-  print("    got interrupt number: "); put_int(u); println("");
+  debug!("    got interrupt number: {}", u)
 }
 
 fn test_allocator() {
@@ -98,8 +98,7 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
     if magic != multiboot::MULTIBOOT_BOOTLOADER_MAGIC {
       panic::panic_message("Multiboot magic is invalid");
     } else {
-      println("Multiboot magic is valid");
-      put_int(info as u32);
+      debug!("Multiboot magic is valid. Info at 0x{:x}", info as u32);
       (*info).multiboot_stuff();
     }
     
@@ -123,7 +122,7 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
     //println("start scheduling?");
     //scheduler::thread_stuff(); // <-- currently broken :(
     
-    //pci_stuff();
+    // pci_stuff();
     
     println("Kernel is done!");
     
@@ -136,7 +135,7 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
 fn pci_stuff() {
   let address_port = cpu::Port::new(0xcf8);
   let data_port = cpu::Port::new(0xcfc);
-  let mut pci = Pci::new(box address_port, box data_port);
+  let mut pci = Pci::new(address_port, data_port);
   pci.init();
   let (not_found, found) = pci.check_devices();
   debug("PCI --> not found", not_found);
@@ -160,7 +159,7 @@ pub extern "C" fn realloc(ptr: *mut u8, size: uint) -> *mut u8 {
 
 #[no_mangle]
 pub extern "C" fn debug(s: &'static str, u: u32) {
-  print(s); put_int(u); println("");
+  debug!("{} 0x{:x}", s, u)
 }
 
 #[no_mangle]

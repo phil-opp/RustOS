@@ -1,4 +1,4 @@
-use panic::{print, println, put_int};
+use panic::{print, println};
 
 // adapted from multiboot.h
 
@@ -169,24 +169,23 @@ impl multiboot_info {
   pub unsafe fn multiboot_stuff(&self) {
     
     /* Print out the flags. */
-    print("flags ="); put_int(self.flags); println("");
+    debug!("flags = 0x{:x}", self.flags)
     
     if self.has_flag(6) {	
-	print("mmap_addr ="); put_int(self.mmap_addr); println("");
-        print("mmap_length ="); put_int(self.mmap_length); println("");
+	debug!("mmap_addr = 0x{:x}", self.mmap_addr)
+	debug!("mmap_length = 0x{:x}", self.mmap_length)
    
    let mut current: u32 = self.mmap_addr;
    while (current < self.mmap_addr + self.mmap_length) {
     let e: *mut multiboot_mmap_entry = transmute(current);
     if ((*e).typ == 1) {
-      print3ln("at ", current as u32, "");
-      print3ln("  size: ", (*e).size, "");
-      //loop{}
-      print3ln("  addr: ", (*e).addr as u32, "");
-      print3ln("  length: ", (*e).len as u32, "");
-      print3ln("  type: ", (*e).typ, "");
-      println("");
-      }
+      debug!("at 0x{:x}", current)
+      debug!("  size: 0x{:x}", (*e).size)
+      debug!("  addr: 0x{:x}", (*e).addr as u32) // TODO(ryan): if 64-bit arg, then crash
+      debug!("  length: 0x{:x}", (*e).len as u32)
+      debug!("  type: 0x{:x}", (*e).typ)
+      
+    }
     current += (*e).size + 4;
     
    } 
@@ -196,11 +195,6 @@ impl multiboot_info {
   }
 }
 
-unsafe fn print3ln(first: &'static str , second: u32, last: &'static str) {
-  print(first); 
-  put_int(second);
-  println(last);
-}
   
 #[repr(packed)]
 struct multiboot_mmap_entry {

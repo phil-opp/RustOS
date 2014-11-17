@@ -16,12 +16,6 @@ pub fn println(string: &'static str) {
   }
 }
 
-pub fn put_int(integer: u32) {
-  unsafe {
-    TERMINAL.put_int(integer);
-  }
-}
-
 pub fn panic_message(string: &'static str) -> ! {
   println(string);
   println("^ panic ->");
