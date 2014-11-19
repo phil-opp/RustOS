@@ -49,6 +49,7 @@ mod multiboot;
 mod allocator;
 mod scheduler;
 mod pci;
+mod rtl8139;
 
 extern "rust-intrinsic" {
   pub fn transmute<T, U>(x: T) -> U;

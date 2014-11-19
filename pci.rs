@@ -1,6 +1,7 @@
 use std::io::{Stream, IoResult, IoError};
 use std::mem::{transmute, size_of};
 use arch::cpu::Port;
+use rtl8139::Rtl8139;
 
 pub struct Pci {
   address_port: Port,
@@ -70,18 +71,21 @@ impl Pci {
   
   pub fn init(&mut self) {}
   
-  pub fn read(&mut self, bus: u8, device: u8, function: u8, offset: u8) -> IoResult<u32> {
+  fn build_address(bus: u8, device: u8, function: u8, offset: u8) -> u32 {
     if (function & 0x03 != 0x00) || (device >= 0x1 << 5) || (function >= 0x1 << 3)  {
       kassert!(false)
-      Ok(1 as u32)
+      return 0;
     } else {
-      let address: u32 = (0x1 as u32 << 31) | (bus as u32 << 16) | (device as u32 << 11) | (function as u32 << 8) | offset as u32;
+      return (0x1 as u32 << 31) | (bus as u32 << 16) | (device as u32 << 11) | (function as u32 << 8) | offset as u32;
+    }
+  }
+  
+  pub fn read(&mut self, bus: u8, device: u8, function: u8, offset: u8) -> IoResult<u32> {
+      let address = Pci::build_address(bus, device, function, offset);
       self.address_port.out_l(address);
       //Port::io_wait();
       let input = self.data_port.in_l();
       Ok(input)
-
-    }
   }
   
   pub fn read_bytes(&mut self, bus: u8, device: u8, start_address: u16, size: u16) -> Vec<u32> {
@@ -125,6 +129,8 @@ impl Pci {
   pub fn check_devices(&mut self) -> (u32, u32) {
     let mut no_device_count = 0;
     let mut device_count = 0;
+    
+    let mut io_offset: u32 = 0;
     for bus in range(0, 256u) {
       for device in range(0, 32u) {
 	match self.read_header(bus as u8, device as u8) {
@@ -138,11 +144,19 @@ impl Pci {
 	    debug!("    status 0x{:x}, command 0x{:x}", shared.status, shared.command)
 	    match header.rest {
 	      Basic(next) => {
-		debug!("        cardbus_pointer: 0x{:x}", next.cardbus_pointer)
-		debug!("        interrupt line: 0x{:x}", next.interrupt_line)
 		for &addr in next.base_addresses.iter() {
-		  debug!("        base_addresses: 0x{:x}", addr)
+		  debug!("        base_address: 0x{:x}", addr)
 		}
+		if (shared.vendor == 0x10ec) && (shared.device == 0x8139) {
+		  debug!("found rtl8139!")
+		  io_offset = (next.base_addresses[0] >> 2) << 2;
+		  debug!("io offset is 0x{:x}", io_offset)
+		  debug!("command is 0x{:x}", shared.command)
+		  self.address_port.out_l(Pci::build_address(bus as u8, device as u8, 0, 4));
+		  self.data_port.out_w(shared.command | 0x4);
+		  debug!("command after bus mastering is 0x{:x}", self.read_header(bus as u8, device as u8).unwrap().shared.command)
+		}
+		
 	      }
 	      _ => ()
 	    }
@@ -150,6 +164,14 @@ impl Pci {
 	}
       }
     }
+    
+    if io_offset != 0 {
+      let mut r = Rtl8139::new(io_offset as u16);
+      r.init();
+      
+      r.put_frame("hello, etherworld!".as_bytes());
+    }
+    
     debug!("not found {}", no_device_count);
     debug!("found {}", device_count);
     (no_device_count, device_count)

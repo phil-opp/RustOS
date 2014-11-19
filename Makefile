@@ -8,6 +8,7 @@ TARGET=i686-unknown-linux-gnu
 DYLIBFLAG=--crate-type=dylib --emit=obj
 LIBFLAG=--crate-type=lib
 RUSTFLAGS=-g --cfg=kernel --target $(TARGET) -L . -Z no-landing-pads
+QEMUARGS=-device rtl8139,vlan=0 -net user,id=net0,vlan=0 -net dump,vlan=0,file=/tmp/rustos-dump.pcap
 
 all: boot.bin
 
@@ -71,10 +72,10 @@ rlibc.o: rust/src/librlibc/lib.rs
 	$(RUSTC) $< -o $@ --emit obj $(RUSTFLAGS) $(LIBFLAG)
 		
 run: boot.bin
-	$(QEMU) -device rtl8139 -kernel $<
+	$(QEMU) $(QEMUARGS) -kernel $<
 
 debug: boot.bin
-	$(QEMU) -S -gdb tcp::3333 -kernel $< &
+	$(QEMU) $(QEMUARGS) -S -gdb tcp::3333 -kernel $< &
 	gdb $< -ex "target remote :3333" -ex "break _start" -ex "c"
 
 %.o: arch/x86/%.s
