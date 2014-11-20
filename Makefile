@@ -26,51 +26,51 @@ libcompiler-rt.a: dummy-compiler-rt.s # needed for dylib creation
 
 libmorestack.a: rust/src/rt/arch/i386/morestack.S # needed for dylib creation
 	$(AS) $< -o $@
-	
+
 %.rlib: rust/src/%/*.rs rust/src/%/lib.rs
 	$(RUSTC) rust/src/%/lib.rs $(RUSTFLAGS)
-	
+
 liblazy_static.rlib: lazy-static/src/lazy_static.rs libstd.rlib
 	$(RUSTC) $< $(RUSTFLAGS) $(LIBFLAG)
-	
+
 liballoc.rlib: rust/src/liballoc/lib.rs libcore.rlib liblibc.rlib
 	$(RUSTC) $< $(RUSTFLAGS) $(LIBFLAG)
 	$(RUSTC) $< $(RUSTFLAGS) $(DYLIBFLAG)
-	
+
 libcore.rlib: rust/src/libcore/lib.rs libmorestack.a libcompiler-rt.a
 	$(RUSTC) $< $(RUSTFLAGS) $(LIBFLAG)
 	$(RUSTC) $< $(RUSTFLAGS) $(DYLIBFLAG)
-	
+
 libcollections.rlib: rust/src/libcollections/lib.rs libcore.rlib liballoc.rlib libunicode.rlib
 	$(RUSTC) $< $(RUSTFLAGS) $(LIBFLAG)
 	$(RUSTC) $< $(RUSTFLAGS) $(DYLIBFLAG)
-	
+
 librand.rlib: rust/src/librand/lib.rs libcore.rlib
 	$(RUSTC) $< $(RUSTFLAGS) $(LIBFLAG)
 	$(RUSTC) $< $(RUSTFLAGS) $(DYLIBFLAG)
-	
+
 libstd.rlib: rust/src/libstd/lib.rs libcore.rlib liballoc.rlib libcollections.rlib librand.rlib liblibc.rlib librustrt.rlib
 	$(RUSTC) $< $(RUSTFLAGS) $(LIBFLAG)
 	$(RUSTC) $< $(RUSTFLAGS) $(DYLIBFLAG)
-	
+
 liblibc.rlib: rust/src/liblibc/lib.rs libmorestack.a libcompiler-rt.a
 	$(RUSTC) $< $(RUSTFLAGS) $(LIBFLAG)
 	$(RUSTC) $< $(RUSTFLAGS) $(DYLIBFLAG)
-	
+
 librustrt.rlib: rust/src/librustrt/lib.rs libcore.rlib liballoc.rlib liblibc.rlib libcollections.rlib
 	$(RUSTC) $< $(RUSTFLAGS) $(LIBFLAG)
 	$(RUSTC) $< $(RUSTFLAGS) $(DYLIBFLAG)
-	
+
 libunicode.rlib: rust/src/libunicode/lib.rs libcore.rlib
 	$(RUSTC) $< $(RUSTFLAGS) $(LIBFLAG)
 	$(RUSTC) $< $(RUSTFLAGS) $(DYLIBFLAG)
-	
+
 main.o: main.rs libstd.rlib liballoc.rlib libcore.rlib libcollections.rlib liblazy_static.rlib
 	$(RUSTC) $< -o $@ --emit obj $(RUSTFLAGS) $(LIBFLAG)
-	
+
 rlibc.o: rust/src/librlibc/lib.rs 
 	$(RUSTC) $< -o $@ --emit obj $(RUSTFLAGS) $(LIBFLAG)
-		
+
 run: boot.bin
 	$(QEMU) $(QEMUARGS) -kernel $<
 
@@ -80,9 +80,9 @@ debug: boot.bin
 
 %.o: arch/x86/%.s
 	$(AS) -g -o $@ $<
-	
-boot.bin: linker.ld main.o boot.o interrupt.o thread.o rlibc.o dependencies.o *.o
-	$(LD) -o $@ -T $^
+
+boot.bin: linker.ld main.o boot.o interrupt.o thread.o rlibc.o dependencies.o libstd.rlib
+	$(LD) -o $@ -T $< *.o
 
 iso: boot.bin
 	cp boot.bin isodir/boot/
@@ -90,9 +90,9 @@ iso: boot.bin
 
 vb: iso
 	virtualbox --debug --startvm rustos
-	
+
 clean: cleanproj
-	rm -f *.rlib *.a *.so
-	
+	rm -f *.rlib *.a *.so *.o
+
 cleanproj:
 	rm -f *.bin main.o *.img *.iso

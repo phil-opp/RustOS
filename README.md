@@ -16,7 +16,7 @@ A simple, [language-based](https://en.wikipedia.org/wiki/Language-based_system) 
   * ld
   * rustc (0.12.0)
 2. Pull this repo `git clone https://github.com/ryanra/RustOS.git`
-3. Make sure to pull the submodules as well: `git submodule update --init --recursive`
+3. Make sure to pull the submodules as well: `git submodule update --init`
 4. Run:
   * On qemu: `make run`
   * Or, make an iso `make iso` and run it on a VM or real hardware!
