@@ -19,6 +19,39 @@ all: boot.bin
 .s.o:
 	$(AS) -g -o $@ $<
 
+
+main.o: main.rs libstd.rlib liballoc.rlib libcore.rlib libcollections.rlib liblazy_static.rlib
+	$(RUSTC) $< -o $@ --emit obj $(RUSTFLAGS) $(LIBFLAG)
+
+run: boot.bin
+	$(QEMU) $(QEMUARGS) -kernel $<
+
+debug: boot.bin
+	$(QEMU) $(QEMUARGS) -S -gdb tcp::3333 -kernel $< &
+	gdb $< -ex "target remote :3333" -ex "break _start" -ex "c"
+
+%.o: arch/x86/%.s
+	$(AS) -g -o $@ $<
+
+boot.bin: linker.ld main.o boot.o interrupt.o thread.o rlibc.rlib dependencies.o libstd.rlib
+	$(LD) -o $@ -T $< *.o
+
+iso: boot.bin
+	cp boot.bin isodir/boot/
+	grub-mkrescue -o boot.iso isodir
+
+vb: iso
+	virtualbox --debug --startvm rustos
+
+clean: cleanproj
+	rm -f *.rlib *.a *.so *.o
+
+cleanproj:
+	rm -f *.bin main.o *.img *.iso
+
+
+# Building the rust standard libraries:
+
 # rustc's call to ld requires libcompiler-rt.a, but apparently
 # nothing in it is used, so we'll just as an empty file 
 libcompiler-rt.a: dummy-compiler-rt.s # needed for dylib creation
@@ -26,9 +59,6 @@ libcompiler-rt.a: dummy-compiler-rt.s # needed for dylib creation
 
 libmorestack.a: rust/src/rt/arch/i386/morestack.S # needed for dylib creation
 	$(AS) $< -o $@
-
-%.rlib: rust/src/%/*.rs rust/src/%/lib.rs
-	$(RUSTC) rust/src/%/lib.rs $(RUSTFLAGS)
 
 liblazy_static.rlib: lazy-static/src/lazy_static.rs libstd.rlib
 	$(RUSTC) $< $(RUSTFLAGS) $(LIBFLAG)
@@ -65,34 +95,8 @@ libunicode.rlib: rust/src/libunicode/lib.rs libcore.rlib
 	$(RUSTC) $< $(RUSTFLAGS) $(LIBFLAG)
 	$(RUSTC) $< $(RUSTFLAGS) $(DYLIBFLAG)
 
-main.o: main.rs libstd.rlib liballoc.rlib libcore.rlib libcollections.rlib liblazy_static.rlib
-	$(RUSTC) $< -o $@ --emit obj $(RUSTFLAGS) $(LIBFLAG)
+rlibc.rlib: rust/src/librlibc/lib.rs
+	$(RUSTC) $< $(RUSTFLAGS) $(LIBFLAG)
+	$(RUSTC) $< $(RUSTFLAGS) $(DYLIBFLAG)
 
-rlibc.o: rust/src/librlibc/lib.rs 
-	$(RUSTC) $< -o $@ --emit obj $(RUSTFLAGS) $(LIBFLAG)
 
-run: boot.bin
-	$(QEMU) $(QEMUARGS) -kernel $<
-
-debug: boot.bin
-	$(QEMU) $(QEMUARGS) -S -gdb tcp::3333 -kernel $< &
-	gdb $< -ex "target remote :3333" -ex "break _start" -ex "c"
-
-%.o: arch/x86/%.s
-	$(AS) -g -o $@ $<
-
-boot.bin: linker.ld main.o boot.o interrupt.o thread.o rlibc.o dependencies.o libstd.rlib
-	$(LD) -o $@ -T $< *.o
-
-iso: boot.bin
-	cp boot.bin isodir/boot/
-	grub-mkrescue -o boot.iso isodir
-
-vb: iso
-	virtualbox --debug --startvm rustos
-
-clean: cleanproj
-	rm -f *.rlib *.a *.so *.o
-
-cleanproj:
-	rm -f *.bin main.o *.img *.iso
