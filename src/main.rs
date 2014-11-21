@@ -50,6 +50,8 @@ mod allocator;
 mod scheduler;
 mod pci;
 mod rtl8139;
+mod driver;
+mod net;
 
 extern "rust-intrinsic" {
   pub fn transmute<T, U>(x: T) -> U;
