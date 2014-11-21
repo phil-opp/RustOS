@@ -2,14 +2,36 @@ use std::io::{Stream, IoResult, IoError};
 use std::mem::{transmute, size_of};
 use arch::cpu::Port;
 use rtl8139::Rtl8139;
-use net::NetworkStack;
+use driver::{DriverManager, NetworkDriver};
+
+pub struct PciManifest {
+  pub register_limit: uint,
+  pub device_id: u16,
+  pub vendor_id: u16,
+  pub bus_master: bool
+}
+
+pub struct PortGranter {
+  base: uint,
+  limit: uint
+}
+
+impl PortGranter {
+
+  pub fn get(&self, offset: uint) -> Port {
+    if (offset as u16 >= self.limit as u16) { // TODO(ryan): doesn't take width into consideration
+      kassert!(false);
+    }
+    let address: u16 = (self.base + offset) as u16; // TODO(ryan): overflow ?
+    Port::new(address)
+  }
+
+}
 
 pub struct Pci {
   address_port: Port,
   data_port: Port
 }
-
-
 
 struct PciHeader {
   shared: SharedHeader,
@@ -66,7 +88,9 @@ fn read_into<'a, T, S>(slice: &'a [S]) -> Box<T> {
 
 impl Pci {
 
-  pub fn new(address_port: Port, data_port: Port) -> Pci {
+  pub fn new() -> Pci {
+    let address_port = Port::new(0xcf8);
+    let data_port = Port::new(0xcfc);
     Pci { address_port: address_port, data_port: data_port }
   }
   
@@ -127,9 +151,13 @@ impl Pci {
     return Some(PciHeader { shared: shared, rest: rest });
   }
   
-  pub fn check_devices(&mut self) -> (u32, u32) {
-    let mut no_device_count = 0;
-    let mut device_count = 0;
+}
+
+impl DriverManager for Pci {
+
+  fn get_drivers(&mut self) -> Vec<Box<NetworkDriver>> {
+    let mut no_device_count: uint = 0;
+    let mut device_count: uint = 0;
     
     let mut io_offset: u32 = 0;
     for bus in range(0, 256u) {
@@ -139,14 +167,14 @@ impl Pci {
 	  Some(header) => {
 	    device_count += 1;
 	    let shared = header.shared;
-	    debug!("bus #{} found device 0x{:x} -- vendor 0x{:x}", bus, shared.device, shared.vendor)
-	    debug!("    class 0x{:x}, subclass 0x{:x}", shared.class_code, shared.subclass)
-	    debug!("    header type 0x{:x}", shared.header_type)
-	    debug!("    status 0x{:x}, command 0x{:x}", shared.status, shared.command)
+	    //debug!("bus #{} found device 0x{:x} -- vendor 0x{:x}", bus, shared.device, shared.vendor)
+	    //debug!("    class 0x{:x}, subclass 0x{:x}", shared.class_code, shared.subclass)
+	    //debug!("    header type 0x{:x}", shared.header_type)
+	    //debug!("    status 0x{:x}, command 0x{:x}", shared.status, shared.command)
 	    match header.rest {
 	      Basic(next) => {
 		for &addr in next.base_addresses.iter() {
-		  debug!("        base_address: 0x{:x}", addr)
+		  //debug!("        base_address: 0x{:x}", addr)
 		}
 		if (shared.vendor == 0x10ec) && (shared.device == 0x8139) {
 		  debug!("found rtl8139!")
@@ -166,21 +194,16 @@ impl Pci {
       }
     }
     
+    let mut ret = vec!();
     if io_offset != 0 {
-      let mut r = Rtl8139::new(io_offset as u16);
-      r.init();
-      
-      
-      let mut n = NetworkStack::new(box r);
-      n.test();
-      
-      
-      
+      let manifest = Rtl8139::manifest();
+      let granter = PortGranter { base: io_offset as uint, limit: manifest.register_limit as uint };
+      ret.push(box Rtl8139::new(granter) as Box<NetworkDriver>);      
     }
     
     debug!("not found {}", no_device_count);
     debug!("found {}", device_count);
-    (no_device_count, device_count)
+    ret
   }
 
 }

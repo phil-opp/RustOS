@@ -8,6 +8,7 @@ A simple, [language-based](https://en.wikipedia.org/wiki/Language-based_system) 
   * Simple VGA for seeing output
   * Some Rust libraries (core, alloc, collections) already in
   * Working (but limited) keyboard input
+  * Beginnings of a network driver (RTL8139) and stack (it can send properly formatted UDP packets!)
 
 ### Building:
 1. Dependencies:

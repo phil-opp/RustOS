@@ -20,7 +20,7 @@ use arch::cpu;
 use panic::{print, println};
 use terminal::TERMINAL;
 use pci::Pci;
-
+use driver::DriverManager;
 
 macro_rules! debug( // TODO(ryan): ugly place for this, but want it accessible by the modules
     ($($arg:tt)*) => (
@@ -145,11 +145,18 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
 }
 
 fn pci_stuff() {
-  let address_port = cpu::Port::new(0xcf8);
-  let data_port = cpu::Port::new(0xcfc);
-  let mut pci = Pci::new(address_port, data_port);
+  let mut pci = Pci::new();
   pci.init();
-  let (not_found, found) = pci.check_devices();
+  let mut drivers = (&mut pci as &mut DriverManager).get_drivers();
+  debug!("Found drivers for {} pci devices", drivers.len());
+  match drivers.pop() {
+    Some(mut driver) => {
+      driver.init();
+      net::NetworkStack::new(driver).test().ok();
+    }
+    None => ()
+  }
+  
 }
 
 #[no_mangle]

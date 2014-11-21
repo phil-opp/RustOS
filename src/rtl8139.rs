@@ -3,7 +3,8 @@ use std::io::IoResult;
 use arch::cpu::Port;
 use std::raw::Slice;
 use std::mem::transmute;
-use driver::NetworkCard;
+use driver::{Driver, NetworkDriver};
+use pci::{PciManifest, PortGranter};
 
 pub struct Rtl8139 {
   command_register: Port, // TODO(ryan): better abstraction for registers (i.e., should take byte-width into consideration + also be for mmap)
@@ -14,12 +15,18 @@ pub struct Rtl8139 {
   descriptor: uint
 }
 
+  
 impl Rtl8139 { // TODO(ryan): is there already a frame oriented interface in std libs to implement?
 
-  pub fn new(io_offset: u16) -> Rtl8139 {
+  pub fn manifest() -> PciManifest {
+    PciManifest { register_limit: 0x100, device_id: 0x8139, vendor_id: 0x10ec, bus_master: true }
+  }
+
+
+  pub fn new(granter: PortGranter) -> Rtl8139 {
     
     let p = |off: u16| -> Port {
-      Port::new(io_offset + off)
+      granter.get(off as uint)
     };
     
     Rtl8139 { config_1: p(0x52),
@@ -30,8 +37,12 @@ impl Rtl8139 { // TODO(ryan): is there already a frame oriented interface in std
 	      descriptor: 0
 	      }
   }
+  
+}
 
-  pub fn init(&mut self) {
+impl Driver for Rtl8139 {
+  
+  fn init(&mut self) {
     self.config_1.out_b(0x00);
 
     self.command_register.out_b(0x10); // reset
@@ -42,10 +53,10 @@ impl Rtl8139 { // TODO(ryan): is there already a frame oriented interface in std
     while (self.command_register.in_b() & 0x0c != 0x0c) {}
     
   }
-  
+
 }
 
-impl NetworkCard for Rtl8139 {
+impl NetworkDriver for Rtl8139 {
 
   fn put_frame(&mut self, bytes: &[u8]) -> IoResult<()> {
     let slice_bytes: Slice<u8> = unsafe { transmute(bytes) };

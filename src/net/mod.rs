@@ -1,14 +1,14 @@
 use std::io::IoResult;
-use driver::NetworkCard;
+use driver::NetworkDriver;
 use std::mem::{size_of, transmute};
 
 pub struct NetworkStack<'a> {
-  card: Box<NetworkCard + 'a>
+  card: Box<NetworkDriver + 'a>
 }
 
 impl<'a> NetworkStack<'a> {
   
-  pub fn new(card: Box<NetworkCard>) -> NetworkStack<'a> { 
+  pub fn new(card: Box<NetworkDriver>) -> NetworkStack<'a> { 
     NetworkStack { card: card }
   }
   
