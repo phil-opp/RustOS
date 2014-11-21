@@ -177,10 +177,7 @@ impl DriverManager for Pci {
 		  //debug!("        base_address: 0x{:x}", addr)
 		}
 		if (shared.vendor == 0x10ec) && (shared.device == 0x8139) {
-		  debug!("found rtl8139!")
 		  io_offset = (next.base_addresses[0] >> 2) << 2;
-		  debug!("io offset is 0x{:x}", io_offset)
-		  debug!("command is 0x{:x}", shared.command)
 		  self.address_port.out_l(Pci::build_address(bus as u8, device as u8, 0, 4));
 		  self.data_port.out_w(shared.command | 0x4);
 		  debug!("command after bus mastering is 0x{:x}", self.read_header(bus as u8, device as u8).unwrap().shared.command)
@@ -201,8 +198,6 @@ impl DriverManager for Pci {
       ret.push(box Rtl8139::new(granter) as Box<NetworkDriver>);      
     }
     
-    debug!("not found {}", no_device_count);
-    debug!("found {}", device_count);
     ret
   }
 

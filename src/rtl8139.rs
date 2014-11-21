@@ -61,7 +61,7 @@ impl NetworkDriver for Rtl8139 {
   fn put_frame(&mut self, bytes: &[u8]) -> IoResult<()> {
     let slice_bytes: Slice<u8> = unsafe { transmute(bytes) };
 
-    debug!("sending {} bytes", slice_bytes.len)
+    trace!("sending {} bytes", slice_bytes.len)
     
 
     self.transmit_address[self.descriptor].out_l(slice_bytes.data as u32);

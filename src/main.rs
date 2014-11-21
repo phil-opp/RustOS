@@ -17,20 +17,44 @@ use std::str;
 use multiboot::multiboot_info;
 use allocator::set_allocator;
 use arch::cpu;
-use panic::{print, println};
 use terminal::TERMINAL;
 use pci::Pci;
 use driver::DriverManager;
 
-macro_rules! debug( // TODO(ryan): ugly place for this, but want it accessible by the modules
+macro_rules! print(
     ($($arg:tt)*) => (
         unsafe {
           use terminal::TERMINAL;
-	  TERMINAL.write(format!("[{}:{} DEBUG]:    ", file!(), line!()).as_bytes()).ok();
 	  TERMINAL.write(format!($($arg)*).as_bytes()).ok();
-	  TERMINAL.write("\n".as_bytes()).ok();
 	}
     )
+)
+
+macro_rules! log( // TODO(ryan): ugly place for this, but want it accessible by the modules
+    ($lvl: expr, $($arg:tt)*) => (
+        unsafe {
+          use terminal::TERMINAL;
+	  print!("[{}:{} {}]: ", $lvl, file!(), line!())
+	  print!($($arg)*)
+	  print!("\n")
+	}
+    )
+)
+
+macro_rules! debug( 
+  ($($arg:tt)*) => (log!("DEBUG", $($arg)*))
+)
+
+macro_rules! warn( 
+  ($($arg:tt)*) => (log!("WARN", $($arg)*))
+)
+
+macro_rules! info( 
+  ($($arg:tt)*) => (log!("INFO", $($arg)*))
+)
+
+macro_rules! trace( 
+  ($($arg:tt)*) => (log!("TRACE", $($arg)*))
 )
 
 macro_rules! kassert(
@@ -40,6 +64,13 @@ macro_rules! kassert(
 	  loop {}
         }
     )
+)
+
+macro_rules! kpanic(
+  ($($arg:tt)*) => (
+    log!("PANIC", $($arg)*)
+    // TODO(ryan): macro compiler not letting me put stuff here...
+  )
 )
 
 pub mod arch;
@@ -60,7 +91,7 @@ extern "rust-intrinsic" {
 
 #[no_mangle]
 pub extern "C" fn callback() {
-  println("    in an interrupt!");
+  debug!("    in an interrupt!");
 }
 
 #[no_mangle]
@@ -71,12 +102,12 @@ pub extern "C" fn callback_i(u: u32) {
 fn test_allocator() {
   let mut v = vec::Vec::new();
   
-  println("Testing allocator with a vector push");
+  debug!("Testing allocator with a vector push");
   v.push("   hello from a vector!");
-  println("   push didn't crash");
+  debug!("   push didn't crash");
   match v.pop() {
-    Some(string) => println(string),
-    None => println("    push was weird...")
+    Some(string) => debug!("{}", string),
+    None => debug!("    push was weird...")
   }
 
 }
@@ -108,35 +139,28 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
     test_allocator();
     
     if magic != multiboot::MULTIBOOT_BOOTLOADER_MAGIC {
-      panic::panic_message("Multiboot magic is invalid");
+      kpanic!("Multiboot magic is invalid");
     } else {
       debug!("Multiboot magic is valid. Info at 0x{:x}", info as u32);
       (*info).multiboot_stuff();
     }
     
-    println((*TEST)[0]);
+    debug!("{}", (*TEST)[0]);
     let cpu = cpu::CPU::current();
     
     (*cpu).make_keyboard(put_char);
     
     (*cpu).enable_interrupts();
-    println("Going to interrupt: ");
+    debug!("Going to interrupt: ");
     (*cpu).test_interrupt();
-    println("    back from interrupt!");
+    debug!("    back from interrupt!");
     
-    let t2: &mut Writer = transmute(&panic::TERMINAL as &Writer);
-
-    t2.write("Hello world from writer\n".as_bytes()).ok();
-    t2.write(concat!("con", "cat\n").as_bytes()).ok();
-    t2.write(format!("for{} {}\n", "mat", 2i).as_bytes()).ok();
-    
-    debug!("debugging :)");
     //println("start scheduling?");
     //scheduler::thread_stuff(); // <-- currently broken :(
     
     pci_stuff();
     
-    println("Kernel is done!");
+    info!("Kernel is done!");
     
     loop {
       (*cpu).idle()
