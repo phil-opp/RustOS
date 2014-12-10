@@ -1,76 +1,64 @@
-use std::mem::transmute;
+use std::mem::{transmute, size_of};
+use std::raw::Slice;
 
 use panic::*;
 
+#[repr(packed)]
 pub struct Thread {
-  stack_pointer: *mut u8,
-  base_pointer: *mut u8,
-  instruction_pointer: *mut u8
+  regs: Registers,
+  esp: u32,
+  instruction_pointer: *mut u8,
+  stack: Box<[u8]>
+}
+
+#[repr(packed)]
+struct Registers {
+    eax: u32, ebx: u32, ecx: u32, edx: u32,
+    ebp: u32, esi: u32, edi: u32
 }
 
 extern "C" {
   
-  fn stack_pointer() -> *mut u8;
+  fn switch_and_save(old_thread: Box<Thread>, new_thread: &Thread, transferred_info: *const u8, save_to_new_thread: bool);
   
-  fn instruction_pointer() -> *mut u8;
-  
-  fn base_pointer() -> *mut u8;
-  
-  fn set_pointers_and_jump(stack_pointer: *mut u8, base_pointer: *mut u8, instruction_pointer: *mut u8);
-    
 }
 
 impl Thread {
 
-  pub fn new(func: extern "C" fn() -> (), mem: *mut u8) -> Thread {
+  fn empty_regs() -> Registers {
+    Registers { eax: 1, ebx: 2, ecx: 3, edx: 4, ebp: 5, esi: 6, edi: 7}
+  }
+
+  pub fn new(func: extern "C" fn() -> (), stack: Box<[u8]>, esp: u32) -> Thread {
     unsafe {
-      Thread { stack_pointer: transmute(mem), instruction_pointer: transmute(func), base_pointer: mem }
+      //let ref s = &stack; // TODO(ryan): having trouble extracting esp from the box ...
+      //let sli: &Slice<u8> = transmute(s);
+      //let esp = sli.data as u32;
+      let t = Thread { stack: stack, instruction_pointer: transmute(func), regs: Thread::empty_regs(), esp: esp};
+      debug!("new thread:");
+      t.debug();
+      t
     }
   }
   
-  pub unsafe fn resume(&self) {
-    set_pointers_and_jump(self.stack_pointer, self.base_pointer, self.instruction_pointer);
-  }
-  
-  /*
-  If called normally, return the current ThreadState
-  If resumed via the resume method, return None
-  */
-  pub fn current_state_or_resumed() -> Option<Thread> {
-    current_state_or_resumed_impl()
+  pub unsafe fn switch_to(&mut self, passed_info: Option<&|old: Box<Thread>, new: &Thread| -> ()>) {
+    let mut current: Box<Thread> = box Thread::new(unsafe {transmute(0_u32)} , box [0,..0], 0);
+    debug!("switching to:")
+    self.debug();
+    debug!("current is:")
+    current.debug();
+    
+    match passed_info {
+      Some(info) => switch_and_save(current, self, unsafe { transmute(info) }, true),
+      None => switch_and_save(current, self, unsafe { transmute(0_u32) }, false)
+    }
+    
   }
   
   pub fn debug(&self) {
-    debug!("eip is 0x{:x}", self.instruction_pointer as u32);
-    wait();
+    debug!("   self is 0x{:x}", transmute::<&Thread, u32>(self));
+    debug!("   eip is 0x{:x}", self.instruction_pointer as u32);
+    debug!("   esp is 0x{:x}", self.esp as u32);
   }
    
 }
-
-fn wait() -> u64 {
-  let mut i: u64 = 0;
-  let mut sum: u64 = 0;
-  while i < 0x8ffffff {
-    i += 1;
-    sum += i*2*i - 4;
-    if (i * 213423) as u32 & 0xff == 1 {
-      i += 2;
-    }
-  }
-  sum
-}
-
-extern "C" fn current_state_or_resumed_impl() -> Option<Thread> {
-  unsafe {
-      let ebp = base_pointer();
-      let esp = stack_pointer();
-      let eip = instruction_pointer();
-      
-      if eip as u32 == 0 {
-	return None
-      } else {
-	Some(Thread {stack_pointer: esp, base_pointer: ebp, instruction_pointer: eip})
-      }
-    }
-}
- 

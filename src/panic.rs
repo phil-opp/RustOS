@@ -22,7 +22,7 @@ pub fn panic_message(string: &'static str) -> ! {
   loop {}
 }
 
-pub unsafe fn abort() -> ! {
+pub fn abort() -> ! {
   panic_message("(from abort)");
   loop {}
 }

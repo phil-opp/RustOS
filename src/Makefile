@@ -47,7 +47,7 @@ clean: cleanproj
 	rm -f *.rlib *.a *.so *.o
 
 cleanproj:
-	rm -f *.bin main.o *.img *.iso
+	rm -f *.bin main.o *.img *.iso thread.o
 
 
 # Building the rust standard libraries:
