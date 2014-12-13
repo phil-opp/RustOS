@@ -5,12 +5,12 @@ use std::collections::Deque;
 use std::collections::dlist::DList;
 use std::mem::transmute;
 
-use arch::thread::{Thread, save_context, restore_context};
+use arch::context::{Context, save_context, restore_context};
 use panic::*;
 use allocator::malloc;
 
 struct Scheduler<'a> {
-  queue: Box<Deque<Thread> + 'a>
+  queue: Box<Deque<Context> + 'a>
 }
 
 lazy_static! {
@@ -20,8 +20,8 @@ lazy_static! {
 impl<'a> Scheduler<'a> {
   
   pub fn new<'a>() -> Scheduler<'a> {
-    let list: DList<Thread> = DList::new();
-    Scheduler { queue: box list as Box<Deque<Thread>> }
+    let list: DList<Context> = DList::new();
+    Scheduler { queue: box list as Box<Deque<Context>> }
   }
   
   pub fn schedule(&mut self, func: extern "C" fn() -> ()) {
@@ -31,7 +31,7 @@ impl<'a> Scheduler<'a> {
     let mem = box [0,..stack_size];
     let addr: uint = unsafe { transmute(mem) };
     debug!("stack is at 0x{:x}", addr)
-    let t = Thread::new(func, mem, addr  + stack_size);
+    let t = Context::new(func, mem, addr  + stack_size);
     self.queue.push_back(t);
   }
   
@@ -42,7 +42,7 @@ impl<'a> Scheduler<'a> {
   }
   
   pub fn switch(&mut self) {
-    let mut saved = Thread::empty();
+    let mut saved = Context::empty();
     let resumed = unsafe { save_context(&mut saved) };
     
     if resumed {

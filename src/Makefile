@@ -33,7 +33,7 @@ debug: boot.bin
 %.o: arch/x86/%.s
 	$(AS) -g -o $@ $<
 
-boot.bin: linker.ld main.o boot.o interrupt.o thread.o rlibc.rlib dependencies.o libstd.rlib
+boot.bin: linker.ld main.o boot.o interrupt.o context.o rlibc.rlib dependencies.o libstd.rlib
 	$(LD) -o $@ -T $< *.o
 
 iso: boot.bin
@@ -47,7 +47,7 @@ clean: cleanproj
 	rm -f *.rlib *.a *.so *.o
 
 cleanproj:
-	rm -f *.bin main.o *.img *.iso thread.o
+	rm -f *.bin main.o *.img *.iso context.o
 
 
 # Building the rust standard libraries:

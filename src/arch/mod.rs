@@ -3,8 +3,8 @@
 pub mod vga;
 
 #[cfg(target_arch = "x86")]
-#[path="x86/thread.rs"]
-pub mod thread;
+#[path="x86/context.rs"]
+pub mod context;
 
 #[cfg(target_arch = "x86")]
 #[path="x86/cpu.rs"]
