@@ -68,7 +68,7 @@ impl CPU {
 	Some(mut k) => k.got_interrupted(),
 	None => unsafe { debug("no keyboard installed", 0) }
       },
-      _ => () //unsafe { debug("interrupt with no handler: ", interrupt_number) }
+      _ => {debug!("interrupt with no handler: {:u}", interrupt_number); loop {};}
     }
     self.acknowledge_irq(interrupt_number);
   }

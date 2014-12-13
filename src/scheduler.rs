@@ -5,7 +5,7 @@ use std::collections::Deque;
 use std::collections::dlist::DList;
 use std::mem::transmute;
 
-use arch::thread::Thread;
+use arch::thread::{Thread, save_context, restore_context};
 use panic::*;
 use allocator::malloc;
 
@@ -27,96 +27,46 @@ impl<'a> Scheduler<'a> {
   pub fn schedule(&mut self, func: extern "C" fn() -> ()) {
     // TODO(ryan) need to add cleanup code to end of called function
     // or else top-level will return to nowhere
-    let mem = box [0,..1024 * 1024];
-    let addr: u32 = unsafe { transmute(mem) };
+    const stack_size: uint = 1024 * 1024;
+    let mem = box [0,..stack_size];
+    let addr: uint = unsafe { transmute(mem) };
     debug!("stack is at 0x{:x}", addr)
-    let t = Thread::new(func, mem, addr);
+    let t = Thread::new(func, mem, addr  + stack_size);
     self.queue.push_back(t);
   }
   
   fn unschedule_current(&mut self) {
-    let mut t = self.queue.pop_front().unwrap();
+    let t = self.queue.pop_front().unwrap();
     debug!("unscheduling")
-    unsafe {
-      let callback = |old: Box<Thread>, new: &Thread| { 
-	t.switch_to(None);
-      };
-      
-      let mut s = Scheduler::switcher();
-      s.switch_to(Some(transmute(&callback)))
-    }
+    unsafe { restore_context(&t) }
   }
   
   pub fn switch(&mut self) {
-    let mut t = self.queue.pop_front().unwrap();
-    debug!("switching"); 
-    let ref mut q = self.queue;
-    debug!("q at 0x{:x}", raw(q));
+    let mut saved = Thread::empty();
+    let resumed = unsafe { save_context(&mut saved) };
     
-    unsafe {
-
-    let mut s = Scheduler::switcher();
-    let c = |old: Box<Thread>, new: &Thread| { 
-      debug!("in closure");
-      debug!("q at 0x{:x}", raw(q));
-      //debug!("old at 0x{:x}", rawb(old));
-      let o = *old;
-      debug!("deref");
-      q.push_back(o);
-      debug!("pushed");
-      //loop {}
-       
-      
-      
-      t.switch_to(None);
-    };
-
-    s.switch_to(Some(&c));
+    if resumed {
+        debug!("resumed!");
+    } else {
+        self.queue.push_back(saved);
+        let t = self.queue.pop_front().unwrap();
+        t.debug();
+        unsafe { restore_context(&t) };
     }
   }
   
-  fn switcher() -> Thread {
-    let mem = box [0,..1024];
-    let addr: u32 = unsafe { transmute(mem) };
-    let t = Thread::new(unsafe { transmute(intermediate_handler) }, mem, addr);
-    t
-  }
 
-}
-
-fn raw<T>(p: &T) -> u32 {
-  unsafe { transmute(p) }
-}
-
-fn rawb<T>(p: Box<T>) -> u32 {
-  unsafe { transmute(p) }
-}
-
-extern "C" fn intermediate_handler(old_thread: Box<Thread>, new_thread: &Thread, func: &mut |Box<Thread>, &Thread| -> ()) {
-  //let oldi: u32 = unsafe { transmute(old_thread) };
-  //let newi: u32 = unsafe { transmute(new_thread) };
-  //debug!("old: 0x{:x}; new: 0x{:x}", oldi, newi);
-  //old_thread.debug();
-  //new_thread.debug();
-  
-  //let f: u32 = unsafe { transmute(func) };
-  //debug!("func: 0x{:x}", f);
-  //loop {}
-  (*func)(old_thread, new_thread);
-  kassert!(false)
 }
 
 fn inner_thread_test(arg: uint) {
-  debug!("    got int: {}", arg as u32);
+  debug!("arg is {:u}", arg)
 }
 
 extern "C" fn test_thread() {
-  debug!("in a thread!");
-  inner_thread_test(10);
+  inner_thread_test(11);
   unsafe {
     let s: *mut Scheduler = SCHEDULER.get();
-    debug!("got sched 0x{:x}", s as u32)
-
+    debug!("got sched 0x{:x}", s as u32)    
     (*s).unschedule_current(); 
   }
 }
@@ -127,8 +77,12 @@ pub fn thread_stuff() {
     static mut o: Once = ONCE_INIT;
     o.doit(|| { });
     let s: *mut Scheduler = SCHEDULER.get();
+    let s2: *mut Scheduler = SCHEDULER.get();
+    
     debug!("orig sched 0x{:x}", s as u32)
+    //loop {};
     (*s).schedule(test_thread);
     (*s).switch();
+    debug!("back")
   }
 }

@@ -135,7 +135,7 @@ lazy_static! {
 pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
   panic::init();
   unsafe {
-    set_allocator((0x100000u32*12) as *mut u8, (0x100000u32*14) as *mut u8);
+    set_allocator((15u * 1024 * 1024) as *mut u8, (20u * 1024 * 1024) as *mut u8);
     test_allocator();
     
     if magic != multiboot::MULTIBOOT_BOOTLOADER_MAGIC {
@@ -156,13 +156,13 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
     debug!("    back from interrupt!");
     
     debug!("start scheduling...");
-    (*cpu).disable_interrupts();
+    //(*cpu).disable_interrupts();
     scheduler::thread_stuff(); // <-- currently broken :(
     
     pci_stuff();
     
     info!("Kernel is done!");
-    
+    //(*cpu).enable_interrupts();
     loop {
       (*cpu).idle()
     }
