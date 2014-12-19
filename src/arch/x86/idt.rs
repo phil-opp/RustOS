@@ -29,11 +29,11 @@ impl IDTEntry {
 }
 
 extern "C" {
-  fn no_op() -> ();
+
+    fn no_op() -> ();
   
-  fn register_all_callbacks(idt: &mut IDT);
+    fn register_all_callbacks(idt: &mut IDT);
   
-  fn debug(s: &str, u: u32) -> ();
 }
 
 #[repr(packed)]

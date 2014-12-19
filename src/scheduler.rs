@@ -7,7 +7,6 @@ use collections::dlist::DList;
 use core::mem::transmute;
 
 use arch::context::{Context, save_context, restore_context};
-use panic::*;
 
 struct Scheduler<'a> {
   queue: Box<Deque<Context> + 'a>
@@ -27,12 +26,12 @@ impl<'a> Scheduler<'a> {
   pub fn schedule(&mut self, func: extern "C" fn() -> ()) {
     // TODO(ryan) need to add cleanup code to end of called function
     // or else top-level will return to nowhere
-    const stack_size: uint = 1024 * 1024;
-    let mem = box [0,..stack_size];
+    const STACK_SIZE: uint = 1024 * 1024;
+    let mem = box [0,..STACK_SIZE];
     let addr: uint = unsafe { transmute(mem) };
     debug!("stack is at 0x{:x}", addr)
-    let t = Context::new(func, mem, addr  + stack_size);
-    self.queue.push_back(t);
+    let t = Context::new(func, mem, addr  + STACK_SIZE);
+    self.queue.push(t);
   }
   
   fn unschedule_current(&mut self) {
@@ -48,7 +47,7 @@ impl<'a> Scheduler<'a> {
     if resumed {
         debug!("resumed!");
     } else {
-        self.queue.push_back(saved);
+        self.queue.push(saved);
         let t = self.queue.pop_front().unwrap();
         t.debug();
         unsafe { restore_context(&t) };
@@ -77,8 +76,7 @@ pub fn thread_stuff() {
     static mut o: Once = ONCE_INIT;
     o.doit(|| { });
     let s: *mut Scheduler = SCHEDULER.get();
-    let s2: *mut Scheduler = SCHEDULER.get();
-    
+
     debug!("orig sched 0x{:x}", s as u32)
     //loop {};
     (*s).schedule(test_thread);

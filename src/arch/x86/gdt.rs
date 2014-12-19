@@ -7,10 +7,9 @@ extern "C" {
   
   fn lgdt(ptr: *mut GDTReal);
   
-  fn debug(s: &'static str, u: u32);
-
 }
 
+#[allow(dead_code)]
 #[repr(packed)]
 struct GDTEntry {
   bytes: [u8,..8]
@@ -63,6 +62,7 @@ pub struct GDT {
   table: Vec<GDTEntry>
 }
 
+#[allow(dead_code)]
 #[repr(packed)]
 struct GDTReal {
   limit: u16,
@@ -89,8 +89,8 @@ impl GDT {
       let limit: u16 = (GDT_SIZE*size_of::<GDTEntry>()) as u16;
       let (base, _): (u32, u32) = transmute(self.table.as_slice());
       let mut real = GDTReal { limit: limit, base: base };
-      debug("limit: ", limit as u32);
-      debug("base: ", base);
+      debug!("limit: {:u}", limit);
+      debug!("base: {:u}", base);
       
       lgdt(&mut real);
     }
@@ -103,9 +103,4 @@ impl GDT {
     //gdt.add_entry( = {.base=&myTss, .limit=sizeof(myTss), .type=0x89}; // You can use LTR(0x18)
   }
 
-
-}
-
-unsafe fn offset_mut(dst: *mut u8, offset: int) -> *mut u8 {
-  transmute((dst as u32) + offset as u32)
 }

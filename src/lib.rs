@@ -18,24 +18,19 @@ extern crate rlibc;
 pub use std::prelude::*;
 
 use collections::vec;
-use collections::string;
-use collections::str;
 
 use multiboot::multiboot_info;
 use allocator::set_allocator;
 use arch::cpu;
-use terminal::TERMINAL;
 use pci::Pci;
 use driver::DriverManager;
 
 macro_rules! print(
-    ($($arg:tt)*) => (
-    {
-          use std::prelude::*;
-          use terminal::TERMINAL;
-	  unsafe { TERMINAL.write(format!($($arg)*).as_bytes()).ok(); }
-	  }
-    )
+    ($($arg:tt)*) => ({
+        use std::prelude::*;
+        use panic::term;
+        term().write(format!($($arg)*).as_bytes()).ok();
+    })
 )
 
 macro_rules! log( // TODO(ryan): ugly place for this, but want it accessible by the modules
@@ -66,7 +61,7 @@ macro_rules! trace(
 
 macro_rules! kassert(
   ($b: expr) => (
-        if (!$b) {
+        if !$b {
 	  debug!("assertion failed {}", stringify!(b))
 	  loop {}
         }
@@ -121,13 +116,11 @@ fn test_allocator() {
 
 #[no_mangle]
 pub extern "C" fn abort() -> ! {
-  unsafe {
     panic::abort();
-  }
 }
 
 fn put_char(c: u8) {
-  unsafe { TERMINAL.put_char(c);}
+    print!("{:c}", c as char);
 }
 
 lazy_static! {
@@ -140,11 +133,12 @@ lazy_static! {
 
 #[no_mangle]
 pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
-  panic::init();
   unsafe {
     set_allocator((15u * 1024 * 1024) as *mut u8, (20u * 1024 * 1024) as *mut u8);
+    panic::init();
     test_allocator();
     
+  
     if magic != multiboot::MULTIBOOT_BOOTLOADER_MAGIC {
       kpanic!("Multiboot magic is invalid");
     } else {

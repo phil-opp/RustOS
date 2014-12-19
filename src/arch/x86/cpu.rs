@@ -38,6 +38,7 @@ extern "C" {
   
 }
 
+#[allow(dead_code)]
 pub struct CPU {
   gdt: GDT,
   idt: IDT,
@@ -82,8 +83,8 @@ impl CPU {
     asm!("hlt" ::::)
   }
   
-  fn acknowledge_irq(&mut self, interrupt_number: u32) {
-    PIC::master().controlPort.write_u8(0x20).ok(); //TODO(ryan) ugly and only for master PIC
+  fn acknowledge_irq(&mut self, _: u32) {
+    PIC::master().control_port.write_u8(0x20).ok(); //TODO(ryan) ugly and only for master PIC
   }
   
   pub fn current() -> *mut CPU {
@@ -121,19 +122,19 @@ pub extern "C" fn add_entry(idt: &mut IDT, index: u32, f: unsafe extern "C" fn()
 
 
 struct PIC {
-  controlPort: Port,
-  maskPort: Port,
+  control_port: Port,
+  mask_port: Port,
   is_master: bool
 }
 
 impl PIC {
 
   fn master() -> PIC {
-    PIC { controlPort: Port::new(0x20), maskPort: Port::new(0x21), is_master: true}
+    PIC { control_port: Port::new(0x20), mask_port: Port::new(0x21), is_master: true}
   }
 
   fn slave() -> PIC {
-    PIC { controlPort: Port::new(0xA0), maskPort: Port::new(0xA1), is_master: false}
+    PIC { control_port: Port::new(0xA0), mask_port: Port::new(0xA1), is_master: false}
   }
   
   unsafe fn remap_to(&mut self, start: u8) {
@@ -142,8 +143,8 @@ impl PIC {
     let enable_all = 0x00;
     let typ = if self.is_master { 0x2 } else { 0x4 };
     
-    self.controlPort.write_u8(icw1).ok();
-    self.maskPort.write(&[start, typ, icw4, enable_all]).ok();
+    self.control_port.write_u8(icw1).ok();
+    self.mask_port.write(&[start, typ, icw4, enable_all]).ok();
   }
 
 }
@@ -213,7 +214,7 @@ impl Reader for Port {
   }
   
   fn read(&mut self, buf: &mut [u8]) -> IoResult<uint> {
-    for el in buf.mut_iter() {
+    for el in buf.iter_mut() {
       *el = self.in_b();
     }
     Ok(buf.len())

@@ -1,8 +1,7 @@
 use std::prelude::*;
-use core::mem::{transmute, size_of};
+use core::mem::transmute;
 
-use panic::*;
-
+#[allow(dead_code)]
 #[repr(packed)]
 pub struct Context {
   regs: Registers,
@@ -11,10 +10,10 @@ pub struct Context {
   stack: Box<[u8]>
 }
 
+#[allow(dead_code)]
 #[repr(packed)]
 struct Registers {
-    eax: u32, ebx: u32, ecx: u32, edx: u32,
-    ebp: u32, esi: u32, edi: u32
+    regs: [u32, ..7]
 }
 
 extern "C" {
@@ -28,7 +27,7 @@ extern "C" {
 impl Context {
 
   fn empty_regs() -> Registers {
-    Registers { eax: 1, ebx: 2, ecx: 3, edx: 4, ebp: 0xffffffff, esi: 6, edi: 7}
+    Registers { regs: [0, 0, 0, 0, 0, 0, 0] }
   }
   
   pub fn empty() -> Context {
@@ -51,7 +50,7 @@ impl Context {
   }
   
   pub fn debug(&self) {
-    debug!("   self is 0x{:x}", transmute::<&Context, u32>(self));
+    unsafe { debug!("   self is 0x{:x}", transmute::<&Context, u32>(self)) }
     debug!("   eip is 0x{:x}", self.instruction_pointer as u32);
     debug!("   esp is 0x{:x}", self.esp as u32);
   }

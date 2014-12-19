@@ -1,5 +1,5 @@
 use std::prelude::*;
-use std::io::{Stream, IoResult, IoError};
+use std::io::IoResult;
 use core::mem::{transmute, size_of};
 
 use arch::cpu::Port;
@@ -21,7 +21,7 @@ pub struct PortGranter {
 impl PortGranter {
 
   pub fn get(&self, offset: uint) -> Port {
-    if (offset as u16 >= self.limit as u16) { // TODO(ryan): doesn't take width into consideration
+    if offset as u16 >= self.limit as u16 { // TODO(ryan): doesn't take width into consideration
       kassert!(false);
     }
     let address: u16 = (self.base + offset) as u16; // TODO(ryan): overflow ?
@@ -40,6 +40,7 @@ struct PciHeader {
   rest: HeaderType
 }
 
+#[allow(dead_code)]
 #[repr(packed)]
 struct SharedHeader {
   vendor: u16,
@@ -56,6 +57,7 @@ struct SharedHeader {
   bist: u8
 }
 
+#[allow(dead_code)]
 #[repr(packed)]
 struct Header1 {
   base_addresses: [u32, ..6],
@@ -70,12 +72,6 @@ struct Header1 {
   min_grant: u8,
   max_latency: u8
 }
-
-#[repr(packed)]
-struct Header2;
-
-#[repr(packed)]
-struct Header3;
 
 enum HeaderType {
   Basic(Header1),
@@ -135,7 +131,7 @@ impl Pci {
   }
   
   fn read_header(&mut self, bus: u8, device: u8) -> Option<PciHeader> {
-    let (vendor, device_id): (u16, u16) = unsafe { transmute(self.read(bus, device, 0, 0).unwrap()) };
+    let (vendor, _): (u16, u16) = unsafe { transmute(self.read(bus, device, 0, 0).unwrap()) };
     if vendor == 0xffff {
       return None
     }
@@ -192,7 +188,7 @@ impl DriverManager for Pci {
 	}
       }
     }
-    
+    debug!("{:u} found pci devices ({:u} not found)", device_count, no_device_count)
     let mut ret = vec!();
     if io_offset != 0 {
       let manifest = Rtl8139::manifest();

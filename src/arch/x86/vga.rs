@@ -36,13 +36,13 @@ impl VGA {
   }
 
   pub fn put(&mut self, point: (uint, uint), chr: u8, fg: Color, bg: Color) -> bool {
-      let (desiredX, desiredY) = point;
-      let (myX, myY) = self.max;
-      if desiredX >= myX || desiredY >= myY {
+      let (desired_x, desired_y) = point;
+      let (my_x, my_y) = self.max;
+      if desired_x >= my_x || desired_y >= my_y {
 	false
       } else {
 	unsafe {
-	  let as_mut: *mut u16 = transmute(self.mapped.offset((myX * desiredY + desiredX) as int));
+	  let as_mut: *mut u16 = transmute(self.mapped.offset((my_x * desired_y + desired_x) as int));
 	  *as_mut = make_vgaentry(chr, make_color(fg, bg));
 	}
 	true
@@ -50,13 +50,13 @@ impl VGA {
   }
   
   pub fn get(&mut self, point: (uint, uint)) -> Option<(u8, Color, Color)> {
-    let (desiredX, desiredY) = point;
-      let (myX, myY) = self.max;
-      if desiredX >= myX || desiredY >= myY {
+    let (desired_x, desired_y) = point;
+      let (my_x, my_y) = self.max;
+      if desired_x >= my_x || desired_y >= my_y {
 	None
       } else {
 	unsafe {
-	  let entry = self.mapped.offset((myX * desiredY + desiredX) as int);
+	  let entry = self.mapped.offset((my_x * desired_y + desired_x) as int);
 	  Some(get_vgaentry(*entry))
 	}
       }

@@ -45,6 +45,7 @@ clean: cleanproj
 	cargo clean
 
 cleanproj:
+	cargo clean -p rustos
 	rm -f *.bin *.img *.iso *.rlib *.a *.so *.o
 
 libcompiler-rt.o: src/dummy-compiler-rt.s # needed for staticlib creation

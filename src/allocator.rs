@@ -1,5 +1,5 @@
 use core::prelude::*;
-use panic::{print, println};
+use panic::{print};
 
 static mut allocator: GoodEnoughForNow = GoodEnoughForNow {current: 0 as *mut u8, size: 0};
 

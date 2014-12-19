@@ -51,7 +51,7 @@ impl Driver for Rtl8139 {
 
     
     self.command_register.out_b(0x0C); // enable transmit
-    while (self.command_register.in_b() & 0x0c != 0x0c) {}
+    while (self.command_register.in_b() & 0x0c) != 0x0c {}
     
   }
 
@@ -69,7 +69,7 @@ impl NetworkDriver for Rtl8139 {
 
     self.transmit_status[self.descriptor].out_l(0xfff & (slice_bytes.len as u32));
     
-    while (self.transmit_status[self.descriptor].in_l() & 0x8000 == 0) { } // TODO(ryan): this is fragile if error sending...
+    while (self.transmit_status[self.descriptor].in_l() & 0x8000) == 0 { } // TODO(ryan): this is fragile if error sending...
     self.descriptor = (self.descriptor + 1) % 4;
     Ok(())
   }  

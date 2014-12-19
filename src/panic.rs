@@ -1,20 +1,21 @@
 use core::prelude::*;
-pub use terminal::TERMINAL;
+use terminal::{TERMINAL, Terminal};
+use core::mem::transmute;
+
+pub fn term() -> &'static mut Terminal {
+    unsafe {transmute(TERMINAL.deref())}
+}
 
 pub fn init() {
-  unsafe { TERMINAL.clear_screen(); }
+  term().clear_screen()
 }
 
 pub fn print(string: &'static str) {
-  unsafe {
-    TERMINAL.print(string);
-  }
+  term().print(string);
 }
 
 pub fn println(string: &'static str) {
-  unsafe {
-    TERMINAL.println(string);
-  }
+  term().println(string);
 }
 
 pub fn panic_message(string: &'static str) -> ! {
@@ -25,5 +26,4 @@ pub fn panic_message(string: &'static str) -> ! {
 
 pub fn abort() -> ! {
   panic_message("(from abort)");
-  loop {}
 }

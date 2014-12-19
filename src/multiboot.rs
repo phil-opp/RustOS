@@ -1,5 +1,7 @@
+#![allow(dead_code)]
+#![allow(non_camel_case_types)]
+
 use core::prelude::*;
-use panic::{print, println};
 
 // adapted from multiboot.h
 
@@ -177,9 +179,9 @@ impl multiboot_info {
 	debug!("mmap_length = 0x{:x}", self.mmap_length)
    
    let mut current: u32 = self.mmap_addr;
-   while (current < self.mmap_addr + self.mmap_length) {
+   while current < self.mmap_addr + self.mmap_length {
     let e: *mut multiboot_mmap_entry = transmute(current);
-    if ((*e).typ == 1) {
+    if (*e).typ == 1 {
       debug!("at 0x{:x}", current)
       debug!("  size: 0x{:x}", (*e).size)
       debug!("  addr: 0x{:x}", (*e).addr as u32) // TODO(ryan): if 64-bit arg, then crashes !
@@ -191,7 +193,7 @@ impl multiboot_info {
     
    } 
      } else {
-     println("no memmap :(");
+     debug!("no memmap :(");
      }
   }
 }

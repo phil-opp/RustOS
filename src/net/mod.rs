@@ -31,12 +31,13 @@ impl<'a> NetworkStack<'a> {
       
     let to_send = &(header, i_header, u_header, raw);
       
-    self.card.put_frame(unsafe { transmute ((to_send, size_of::<(EthernetHeader, IpHeader, UdpHeader)>() + raw.len())) });
+    self.card.put_frame(unsafe { transmute ((to_send, size_of::<(EthernetHeader, IpHeader, UdpHeader)>() + raw.len())) }).ok();
     Ok(())
   }
 
 }
 
+#[allow(dead_code)]
 #[repr(packed)]
 struct UdpHeader {
   source_port: u16,
@@ -58,6 +59,7 @@ impl UdpHeader {
 
 }
 
+#[allow(dead_code)]
 #[repr(packed)]
 struct IpHeader {
   version_length: u8,
@@ -80,7 +82,7 @@ struct IpHeader {
 impl IpHeader {
 
   fn new(payload_length: u16, protocol: u8, source: u32, destination: u32) -> IpHeader {
-    let mut header = IpHeader {
+    IpHeader {
       version_length: ((0x4) << 4) | 5,
       tos: 0,
       length: size_of::<IpHeader>() as u16 + payload_length.to_be(),
@@ -91,13 +93,12 @@ impl IpHeader {
       source: source,
       destination: destination,
       crc: 0
-    };
-    // TODO(ryan): crc ?
-    header
+    }
   }
 
 }
 
+#[allow(dead_code)]
 #[repr(packed)]
 struct EthernetHeader {
   //preamble: [u8,..8],
@@ -120,10 +121,3 @@ impl EthernetHeader {
   }
 
 }
-
-#[repr(packed)]
-struct EtherFooter {
-  crc: u32
-}
-
-

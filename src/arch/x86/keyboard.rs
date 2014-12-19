@@ -11,14 +11,14 @@ pub struct Keyboard {
 
 bitflags!(
   flags Status: u8 {
-    static output_full = 0b00000001,
-    static input_full = 0b00000010,
-    static system = 0b00000100,
-    static command = 0b00001000,
-    static keyboard_locked = 0b00010000,
-    static auxiliary_output_full = 0b00100000,
-    static timeout = 0b01000000,
-    static parity_error = 0b10000000
+    static OUTPUT_FULL = 0b00000001,
+    static INPUT_FULL = 0b00000010,
+    static SYSTEM = 0b00000100,
+    static COMMAND = 0b00001000,
+    static KEYBOARD_LOCKED = 0b00010000,
+    static AUX_OUTPUT_FULL = 0b00100000,
+    static TIMEOUT = 0b01000000,
+    static PARITY_ERROR = 0b10000000
   }
 )
 
@@ -32,9 +32,11 @@ impl Keyboard {
     self.callback = callback;
   }
   
+  #[allow(dead_code)]
   fn get_status(&mut self) -> Status {
     Status::from_bits(self.control_port.read_u8().unwrap()).unwrap()
   }
+  
   /*
   fn send_command(&mut self, command: Command) {
     while get_status().output_full as bool {}
@@ -51,12 +53,5 @@ impl Keyboard {
       None => ()
     }
   }
-  
-  
-}
-
-extern "C" {
-
-  fn debug(s: &str, u: u32);
-
+    
 }
