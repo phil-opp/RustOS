@@ -34,11 +34,11 @@ target/$(TARGET)/librustos*.a: Cargo.toml libmorestack.a libcompiler-rt.a
 boot.bin: src/linker.ld boot.o target/$(TARGET)/librustos*.a interrupt.o context.o dependencies.o
 	$(LD) -o $@ -T $^
 
-iso: boot.bin
-	cp boot.bin isodir/boot/
-	grub-mkrescue -o boot.iso isodir
+boot.iso: boot.bin
+	cp boot.bin src/isodir/boot/
+	grub-mkrescue -o boot.iso src/isodir
 
-vb: iso
+vb: boot.iso
 	virtualbox --debug --startvm rustos
 
 clean: cleanproj
