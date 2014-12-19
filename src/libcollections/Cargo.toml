@@ -1,0 +1,17 @@
+[package]
+name = "collections"
+version = "0.0.1"
+authors = [ "you@example.com" ]
+
+[features]
+default = ["rustos"]
+rustos = []
+
+[dependencies.core]
+path = "../libcore"
+
+[dependencies.alloc]
+path = "../liballoc"
+
+[dependencies.unicode]
+path = "../libunicode"

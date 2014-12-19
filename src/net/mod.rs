@@ -1,6 +1,8 @@
 use std::io::IoResult;
+use std::prelude::*;
+use core::mem::{size_of, transmute};
+
 use driver::NetworkDriver;
-use std::mem::{size_of, transmute};
 
 pub struct NetworkStack<'a> {
   card: Box<NetworkDriver + 'a>

@@ -1,4 +1,4 @@
-
+#![no_std]
 #![feature(phase)]
 #![feature(lang_items)]
 #![allow(ctypes)]
@@ -9,10 +9,17 @@
 
 #[phase(plugin)]
 extern crate lazy_static;
+#[phase(plugin, link)]
+extern crate std; // for useful macros and IO interfaces
+extern crate core;
+extern crate collections;
+extern crate rlibc;
 
-use std::vec;
-use std::string;
-use std::str;
+pub use std::prelude::*;
+
+use collections::vec;
+use collections::string;
+use collections::str;
 
 use multiboot::multiboot_info;
 use allocator::set_allocator;
@@ -23,21 +30,21 @@ use driver::DriverManager;
 
 macro_rules! print(
     ($($arg:tt)*) => (
-        unsafe {
+    {
+          use std::prelude::*;
           use terminal::TERMINAL;
-	  TERMINAL.write(format!($($arg)*).as_bytes()).ok();
-	}
+	  unsafe { TERMINAL.write(format!($($arg)*).as_bytes()).ok(); }
+	  }
     )
 )
 
 macro_rules! log( // TODO(ryan): ugly place for this, but want it accessible by the modules
     ($lvl: expr, $($arg:tt)*) => (
-        unsafe {
-          use terminal::TERMINAL;
-	  print!("[{}:{} {}]: ", $lvl, file!(), line!())
+          {
+          print!("[{}:{} {}]: ", $lvl, file!(), line!())
 	  print!($($arg)*)
 	  print!("\n")
-	}
+	  }
     )
 )
 
@@ -124,8 +131,8 @@ fn put_char(c: u8) {
 }
 
 lazy_static! {
-  static ref TEST: vec::Vec<&'static str> = {
-    let mut v = vec::Vec::new();
+  static ref TEST: Vec<&'static str> = {
+    let mut v = Vec::new();
     v.push("hi from lazy sttaic");
     v
   };

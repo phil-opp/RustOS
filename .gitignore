@@ -9,3 +9,5 @@
 *.so
 *.a
 *.bc
+**/target/
+**/Cargo.lock

@@ -1,8 +1,9 @@
+use std::prelude::*;
+use std::io::IoResult;
+use core::mem::transmute;
+
 use arch::vga;
 use panic::panic_message;
-use std::io::{Writer, IoResult};
-use std::mem::transmute;
-use std::ptr::RawPtr;
 
 // TODO(ryan): next line is breaking abstractions (but can't find a nice way to init it...)
 pub static mut TERMINAL: Terminal = Terminal { vga: vga::VGA { mapped: vga::VGA_START, max: vga::VGA_MAX }, current: Point {x: 0, y: 0} };

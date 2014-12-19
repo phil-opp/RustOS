@@ -1,3 +1,5 @@
+pub use std::prelude::*;
+
 #[cfg(target_arch = "x86")]
 #[path="x86/vga.rs"]
 pub mod vga;

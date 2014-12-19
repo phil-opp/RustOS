@@ -1,3 +1,4 @@
+use std::prelude::*;
 use std::io::IoResult;
 use pci::Pci;
 

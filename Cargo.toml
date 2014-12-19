@@ -1,0 +1,23 @@
+[package]
+name = "rustos"
+version = "0.0.1"
+authors = [ "you@example.com" ]
+
+[dependencies.lazy_static]
+path = "src/lazy-static"
+
+[dependencies.std]
+path = "src/libstd"
+
+[dependencies.core]
+path = "src/libcore"
+
+[dependencies.collections]
+path = "src/libcollections"
+
+[dependencies.rlibc]
+path = "src/librlibc"
+
+[lib]
+name = "rustos"
+crate-type = ["staticlib"]

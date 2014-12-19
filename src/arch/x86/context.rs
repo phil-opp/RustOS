@@ -1,5 +1,5 @@
-use std::mem::{transmute, size_of};
-use std::raw::Slice;
+use std::prelude::*;
+use core::mem::{transmute, size_of};
 
 use panic::*;
 

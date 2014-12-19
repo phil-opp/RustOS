@@ -1,4 +1,5 @@
-use std::mem::{transmute, size_of};
+use std::prelude::*;
+use core::mem::{transmute, size_of};
 
 static GDT_SIZE: uint = 3;
 

@@ -1,3 +1,4 @@
+use core::prelude::*;
 use panic::{print, println};
 
 // adapted from multiboot.h

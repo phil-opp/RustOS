@@ -1,0 +1,14 @@
+[package]
+name = "unicode"
+version = "0.0.1"
+authors = [ "you@example.com" ]
+
+[features]
+default = ["rustos"]
+rustos = []
+
+[dependencies.core]
+path = "../libcore"
+
+[dependencies.libc]
+path = "../liblibc"

@@ -1,0 +1,26 @@
+[package]
+name = "std"
+version = "0.0.1"
+authors = [ "you@example.com" ]
+
+[features]
+default = ["rustos"]
+rustos = []
+
+[dependencies.core]
+path = "../libcore"
+
+[dependencies.libc]
+path = "../liblibc"
+
+[dependencies.alloc]
+path = "../liballoc"
+
+[dependencies.collections]
+path = "../libcollections"
+
+[dependencies.rand]
+path = "../librand"
+
+[dependencies.rustrt]
+path = "../librustrt"

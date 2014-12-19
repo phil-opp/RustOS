@@ -1,0 +1,11 @@
+[package]
+name = "rlibc"
+version = "0.0.1"
+authors = [ "you@example.com" ]
+
+[dependencies.core]
+path = "../libcore"
+
+[features]
+default = ["rustos"]
+rustos = []

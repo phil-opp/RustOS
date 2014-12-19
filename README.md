@@ -12,10 +12,11 @@ A simple, [language-based](https://en.wikipedia.org/wiki/Language-based_system) 
 
 ### Building:
 1. Dependencies:
-  * qemu (emulator) or grub-mkrescue (run an iso on a VM or hardware)
+  * qemu (emulator) **or** grub-mkrescue (run an iso on a VM or hardware)
   * as
   * ld
   * rustc (0.12.0)
+  * cargo (latest)
 2. Pull this repo `git clone https://github.com/ryanra/RustOS.git`
 3. Make sure to pull the submodules as well: `git submodule update --init`
 4. Run:

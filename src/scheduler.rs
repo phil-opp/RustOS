@@ -1,13 +1,13 @@
+use std::prelude::*;
 use std::one::{ONCE_INIT, Once};
 
 use std::ty::Unsafe;
-use std::collections::Deque;
-use std::collections::dlist::DList;
-use std::mem::transmute;
+use collections::Deque;
+use collections::dlist::DList;
+use core::mem::transmute;
 
 use arch::context::{Context, save_context, restore_context};
 use panic::*;
-use allocator::malloc;
 
 struct Scheduler<'a> {
   queue: Box<Deque<Context> + 'a>

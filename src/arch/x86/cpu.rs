@@ -1,10 +1,11 @@
+use std::prelude::*;
+use std::io::IoResult;
+use core::ty::Unsafe;
+
 use arch::idt::IDT;
 use arch::gdt::GDT;
 
-use std::io::IoResult;
 use arch::keyboard::Keyboard;
-
-use std::ty::Unsafe;
 
 lazy_static! {
   static ref CURRENT_CPU: Unsafe<CPU> = Unsafe::new(CPU::new());

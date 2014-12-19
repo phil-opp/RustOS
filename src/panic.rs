@@ -1,3 +1,4 @@
+use core::prelude::*;
 pub use terminal::TERMINAL;
 
 pub fn init() {

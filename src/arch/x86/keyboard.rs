@@ -1,3 +1,4 @@
+use std::prelude::*; // for bitflags
 use arch::cpu::Port;
 
 static KEY_CODE_TO_ASCII: &'static [u8] = b"??1234567890-=??qwertyuiop[]\n?asdfghjkl;'`?\\zxcvbnm,./?*? ?"; 

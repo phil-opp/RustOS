@@ -3,6 +3,7 @@
 # just find the .so file for them and add it to the linker (and hope it
 # doesn't pull any linux dependencies
 
+.globl _Unwind_Resume
 .globl EXHAUSTED
 .globl __mulodi4
 .globl __divdi3
@@ -86,7 +87,7 @@
 .globl tanh
 .globl fmod
 
-
+_Unwind_Resume:
 EXHAUSTED:
 __mulodi4:
 __divdi3:

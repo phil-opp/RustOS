@@ -1,5 +1,7 @@
+use std::prelude::*;
 use std::io::{Stream, IoResult, IoError};
-use std::mem::{transmute, size_of};
+use core::mem::{transmute, size_of};
+
 use arch::cpu::Port;
 use rtl8139::Rtl8139;
 use driver::{DriverManager, NetworkDriver};

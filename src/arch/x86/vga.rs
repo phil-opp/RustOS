@@ -1,4 +1,5 @@
-use std::mem::transmute;
+use core::prelude::*;
+use core::mem::transmute;
 
 pub static VGA_START: *mut u16 = 0xb8000 as *mut u16; // TODO(ryan) this shouldn't be exposed
 pub static VGA_MAX: (uint, uint) = (80, 24);
