@@ -2,6 +2,7 @@
 #![allow(non_camel_case_types)]
 
 use core::prelude::*;
+use core::mem::transmute;
 
 // adapted from multiboot.h
 
@@ -157,10 +158,6 @@ pub struct multiboot_info {
   vbe_interface_seg: u16,
   vbe_interface_off: u16,
   vbe_interface_len: u16,
-}
-
-extern "rust-intrinsic" {
-    pub fn transmute<T, U>(x: T) -> U;
 }
 
 impl multiboot_info {

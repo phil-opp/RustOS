@@ -47,16 +47,12 @@ interrupt:
 .macro make_all_callbacks, num=50
 .if \num+1
    make_callback %num 
-      #cli
-      #jmp loop
       pusha
       pushl $\num
       call unified_handler
       
-      #call callback_i
       addl $4, %esp
       popa
-      #sti
       iret
   make_all_callbacks \num-1
 .endif

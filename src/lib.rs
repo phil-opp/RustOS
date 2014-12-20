@@ -1,8 +1,6 @@
 #![no_std]
 #![feature(phase)]
-#![feature(lang_items)]
 #![allow(ctypes)]
-#![feature(intrinsics)]
 #![feature(globs)]
 #![feature(asm)]
 #![feature(macro_rules)]
@@ -38,21 +36,6 @@ mod rtl8139;
 mod driver;
 mod net;
 
-extern "rust-intrinsic" {
-  pub fn transmute<T, U>(x: T) -> U;
-}
-
-
-#[no_mangle]
-pub extern "C" fn callback() {
-  debug!("    in an interrupt!");
-}
-
-#[no_mangle]
-pub extern "C" fn callback_i(u: u32) {
-  debug!("    got interrupt number: {}", u)
-}
-
 fn test_allocator() {
   let mut v = vec::Vec::new();
   
@@ -64,11 +47,6 @@ fn test_allocator() {
     None => debug!("    push was weird...")
   }
 
-}
-
-#[no_mangle]
-pub extern "C" fn abort() -> ! {
-    panic::abort();
 }
 
 fn put_char(c: u8) {
@@ -160,4 +138,14 @@ pub extern "C" fn debug(s: &'static str, u: u32) {
 #[no_mangle]
 pub extern "C" fn __morestack() {
   loop { } //TODO(ryan) should I do anything here?
+}
+
+#[no_mangle]
+pub extern "C" fn abort() -> ! {
+    panic::abort();
+}
+
+#[no_mangle]
+pub extern "C" fn callback() {
+  debug!("    in an interrupt!");
 }

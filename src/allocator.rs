@@ -73,11 +73,11 @@ pub fn free(ptr: *mut u8) {
 }
 
 extern "C" {
-  fn memmove(dest: *mut u8, src: *mut u8, count: int);
+  fn memmove(dest: *mut u8, src: *mut u8, count: u32);
 }
 
 pub fn realloc(old: *mut u8, size: uint) -> *mut u8 {
   let new = malloc(size);
-  unsafe { memmove(new, old, size as int); } //TODO(ryan): size may be too large
+  unsafe { memmove(new, old, size as u32); } //TODO(ryan): size may be too large
   new
 }
