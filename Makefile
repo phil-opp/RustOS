@@ -29,7 +29,7 @@ debug: boot.bin
 	$(AS) -g -o $@ $<
 
 target/$(TARGET)/librustos*.a: Cargo.toml libmorestack.a libcompiler-rt.a 
-	cargo build --target i686-unknown-linux-gnu --verbose
+	cargo build --target $(TARGET) --verbose
 	
 boot.bin: src/linker.ld boot.o target/$(TARGET)/librustos*.a interrupt.o context.o dependencies.o
 	$(LD) -o $@ -T $^
@@ -53,3 +53,4 @@ libcompiler-rt.o: src/dummy-compiler-rt.s # needed for staticlib creation
 	
 libmorestack.o: src/rust/src/rt/arch/i386/morestack.S # needed for staticlib creation
 	$(AS) $< -o $@
+
