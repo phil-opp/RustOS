@@ -2,6 +2,3 @@
 [submodule "rust"]
 	path = src/rust
 	url = https://github.com/ryanra/rust.git
-[submodule "lazy-static"]
-	path = src/lazy-static
-	url = https://github.com/ryanra/lazy-static.rs

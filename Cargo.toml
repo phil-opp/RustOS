@@ -4,7 +4,8 @@ version = "0.0.1"
 authors = [ "you@example.com" ]
 
 [dependencies.lazy_static]
-path = "src/lazy-static"
+git = "https://github.com/ryanra/lazy-static.rs"
+branch = "rustos"
 
 [dependencies.std]
 path = "src/libstd"
