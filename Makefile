@@ -17,7 +17,7 @@ all: boot.bin
 
 .o.a:
 	ar rcs $@ $<
-	
+
 run: boot.bin
 	$(QEMU) $(QEMUARGS) -kernel $<
 
@@ -30,7 +30,7 @@ debug: boot.bin
 
 target/$(TARGET)/librustos*.a: Cargo.toml libmorestack.a libcompiler-rt.a lib_context.a
 	cargo build --target $(TARGET) --verbose
-	
+
 boot.bin: src/linker.ld boot.o target/$(TARGET)/librustos*.a interrupt.o context.o dependencies.o
 	$(LD) -o $@ -T $^
 
@@ -50,6 +50,6 @@ cleanproj:
 
 libcompiler-rt.o: src/dummy-compiler-rt.s # needed for staticlib creation
 	$(AS) $< -o $@
-	
-lib%.o: src/rust/src/rt/arch/i386/%.S
+
+lib%.o: lib/rust/src/rt/arch/i386/%.S
 	$(AS) $< -o $@

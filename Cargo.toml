@@ -8,16 +8,16 @@ git = "https://github.com/ryanra/lazy-static.rs"
 branch = "rustos"
 
 [dependencies.std]
-path = "src/libstd"
+path = "lib/libstd"
 
 [dependencies.core]
-path = "src/libcore"
+path = "lib/libcore"
 
 [dependencies.collections]
-path = "src/libcollections"
+path = "lib/libcollections"
 
 [dependencies.rlibc]
-path = "src/librlibc"
+path = "lib/librlibc"
 
 [lib]
 name = "rustos"

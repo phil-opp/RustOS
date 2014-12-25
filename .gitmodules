@@ -1,4 +1,4 @@
 
 [submodule "rust"]
-	path = src/rust
+	path = lib/rust
 	url = https://github.com/ryanra/rust.git
