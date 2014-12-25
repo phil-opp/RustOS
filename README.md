@@ -58,7 +58,7 @@ an interface for adding drivers and libraries)
 
 ### Current issues:
 1. ~~Linkage probelms~~ fixed!
-2. Threading is buggy and needs more attention.
+2. ~~Threading is buggy and needs more attention.~~ fixed! (no longer buggy, but still more to do!)
 3. The current allocator never actually frees data and is just there to get `collections` working.
 
 ### Organization:
@@ -67,4 +67,4 @@ an interface for adding drivers and libraries)
   * The idea is to move most of the functionality into a runtime library in a fork of rust so we can support `libstd`
 
 ### License
-[Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) or the [MIT license](http://opensource.org/licenses/MIT), at your option. See See LICENSE-APACHE and LICENSE-MIT for details.
+[Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) or the [MIT license](http://opensource.org/licenses/MIT), at your option. See LICENSE-APACHE and LICENSE-MIT for details.

@@ -28,7 +28,7 @@ debug: boot.bin
 %.o: src/arch/x86/%.s
 	$(AS) -g -o $@ $<
 
-target/$(TARGET)/librustos*.a: Cargo.toml libmorestack.a libcompiler-rt.a 
+target/$(TARGET)/librustos*.a: Cargo.toml libmorestack.a libcompiler-rt.a lib_context.a
 	cargo build --target $(TARGET) --verbose
 	
 boot.bin: src/linker.ld boot.o target/$(TARGET)/librustos*.a interrupt.o context.o dependencies.o
@@ -51,6 +51,5 @@ cleanproj:
 libcompiler-rt.o: src/dummy-compiler-rt.s # needed for staticlib creation
 	$(AS) $< -o $@
 	
-libmorestack.o: src/rust/src/rt/arch/i386/morestack.S # needed for staticlib creation
+lib%.o: src/rust/src/rt/arch/i386/%.S
 	$(AS) $< -o $@
-

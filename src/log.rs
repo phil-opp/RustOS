@@ -33,17 +33,24 @@ macro_rules! trace(
 )
 
 macro_rules! kassert(
-  ($b: expr) => (
+  ($b: expr) => ({
         if !$b {
           debug!("assertion failed {}", stringify!(b))
-          loop {}
+          ::panic::abort();
         }
-    )
+    })
 )
 
 macro_rules! kpanic(
   ($($arg:tt)*) => ({
     log!("PANIC", $($arg)*)
     kassert!(false);
+  })
+)
+
+macro_rules! not_reached(
+  ($($arg:tt)*) => ({
+    log!("PANIC", $($arg)*)
+    ::panic::abort();
   })
 )

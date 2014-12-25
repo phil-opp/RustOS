@@ -11,7 +11,7 @@ extern crate lazy_static;
 extern crate std; // for useful macros and IO interfaces
 extern crate core;
 extern crate collections;
-extern crate rlibc;
+extern crate rlibc; // not directly used, but needed to link to llvm emitted calls
 
 pub use std::prelude::*;
 
@@ -22,6 +22,7 @@ use allocator::set_allocator;
 use arch::cpu;
 use pci::Pci;
 use driver::DriverManager;
+use thread::scheduler;
 
 #[macro_escape]
 mod log;
@@ -30,7 +31,7 @@ mod terminal;
 mod panic;
 mod multiboot;
 mod allocator;
-mod scheduler;
+mod thread;
 mod pci;
 mod rtl8139;
 mod driver;
@@ -87,13 +88,12 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
     debug!("    back from interrupt!");
     
     debug!("start scheduling...");
-    //(*cpu).disable_interrupts();
-    scheduler::thread_stuff(); // <-- currently broken :(
+    
+    scheduler::thread_stuff();
     
     pci_stuff();
     
     info!("Kernel is done!");
-    //(*cpu).enable_interrupts();
     loop {
       (*cpu).idle()
     }
