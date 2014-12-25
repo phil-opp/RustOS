@@ -24,3 +24,6 @@ path = "../librand"
 
 [dependencies.rustrt]
 path = "../librustrt"
+
+[dependencies.unicode]
+path = "../libunicode"
