@@ -12,14 +12,16 @@ crate-type = ["staticlib"]
 git = "https://github.com/ryanra/lazy-static.rs"
 branch = "rustos"
 
-[dependencies.std]
-path = "lib/libstd"
-
 [dependencies.core]
 path = "lib/libcore"
+
+[dependencies.alloc]
+path = "lib/liballoc"
+default-features = false
+features = ["external_funcs"]
 
 [dependencies.collections]
 path = "lib/libcollections"
 
-[dependencies.rlibc]
-path = "lib/librlibc"
+[dependencies]
+rlibc = "*"

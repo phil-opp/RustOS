@@ -7,12 +7,5 @@ authors = [ "you@example.com" ]
 name = "unicode"
 
 
-[features]
-default = ["rustos"]
-rustos = []
-
 [dependencies.core]
 path = "../libcore"
-
-[dependencies.libc]
-path = "../liblibc"

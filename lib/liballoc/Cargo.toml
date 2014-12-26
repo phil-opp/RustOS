@@ -7,12 +7,10 @@ authors = [ "you@example.com" ]
 name = "alloc"
 
 
-[features]
-default = ["rustos"]
-rustos = []
-
 [dependencies.core]
 path = "../libcore"
 
-[dependencies.libc]
-path = "../liblibc"
+[features]
+default  = []
+external_funcs = []
+external_crate = []

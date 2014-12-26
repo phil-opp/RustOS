@@ -5,8 +5,3 @@ authors = [ "you@example.com" ]
 
 [lib]
 name = "core"
-
-
-[features]
-default = ["rustos"]
-rustos = []

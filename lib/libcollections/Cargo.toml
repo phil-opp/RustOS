@@ -7,10 +7,6 @@ authors = [ "you@example.com" ]
 name = "collections"
 
 
-[features]
-default = ["rustos"]
-rustos = []
-
 [dependencies.core]
 path = "../libcore"
 
