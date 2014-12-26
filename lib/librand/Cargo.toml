@@ -3,6 +3,9 @@ name = "rand"
 version = "0.0.1"
 authors = [ "you@example.com" ]
 
+[lib]
+name = "rand"
+
 [dependencies.core]
 path = "../libcore"
 

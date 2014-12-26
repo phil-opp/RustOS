@@ -3,6 +3,11 @@ name = "rustos"
 version = "0.0.1"
 authors = [ "you@example.com" ]
 
+[lib]
+name = "rustos"
+crate-type = ["staticlib"]
+
+
 [dependencies.lazy_static]
 git = "https://github.com/ryanra/lazy-static.rs"
 branch = "rustos"
@@ -18,7 +23,3 @@ path = "lib/libcollections"
 
 [dependencies.rlibc]
 path = "lib/librlibc"
-
-[lib]
-name = "rustos"
-crate-type = ["staticlib"]

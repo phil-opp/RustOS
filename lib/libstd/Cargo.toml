@@ -3,6 +3,10 @@ name = "std"
 version = "0.0.1"
 authors = [ "you@example.com" ]
 
+[lib]
+name = "std"
+
+
 [features]
 default = ["rustos"]
 rustos = []

@@ -3,6 +3,10 @@ name = "alloc"
 version = "0.0.1"
 authors = [ "you@example.com" ]
 
+[lib]
+name = "alloc"
+
+
 [features]
 default = ["rustos"]
 rustos = []

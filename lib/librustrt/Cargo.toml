@@ -3,6 +3,10 @@ name = "rustrt"
 version = "0.0.1"
 authors = [ "you@example.com" ]
 
+[lib]
+name = "rustrt"
+
+
 [features]
 default = ["rustos"]
 rustos = []

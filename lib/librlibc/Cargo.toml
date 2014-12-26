@@ -3,6 +3,10 @@ name = "rlibc"
 version = "0.0.1"
 authors = [ "you@example.com" ]
 
+[lib]
+name = "rlibc"
+
+
 [dependencies.core]
 path = "../libcore"
 

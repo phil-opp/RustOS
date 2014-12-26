@@ -3,6 +3,10 @@ name = "unicode"
 version = "0.0.1"
 authors = [ "you@example.com" ]
 
+[lib]
+name = "unicode"
+
+
 [features]
 default = ["rustos"]
 rustos = []
