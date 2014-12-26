@@ -111,13 +111,9 @@ impl Context {
     }
 }
 
-unsafe fn rust_swap_registers(out_regs: *mut Registers, in_regs: *const Registers) {
-    SWAP_REGISTERS(out_regs, in_regs);
-}
-
 #[link(name = "_context", kind = "static")]
 extern {
-    fn SWAP_REGISTERS(out_regs: *mut Registers, in_regs: *const Registers);
+    fn rust_swap_registers(out_regs: *mut Registers, in_regs: *const Registers);
 }
 
 // Register contexts used in various architectures

@@ -32,21 +32,19 @@ boot.iso: boot.bin
 	cp boot.bin src/isodir/boot/
 	grub-mkrescue -o boot.iso src/isodir
 
-libcompiler-rt.o: src/dummy-compiler-rt.s # needed for staticlib creation
-	$(AS) $< -o $@
+compiler-rt.o: src/dummy-compiler-rt.s # needed for staticlib creation
+	$(AS)  -o $@ $<
 
-lib%.o: lib/rust/src/rt/arch/i386/%.S
-	$(AS) $< -o $@
+%.s: lib/rust/src/rt/arch/i386/%.S
+	$(CPP) -o $@ $<
 
 %.o: src/arch/x86/%.s
-	$(AS) -g -o $@ $<
+	$(AS)  -o $@ $<
 
-.SUFFIXES: .o .s .rlib .a .so
+%.o: src/%.s
+	$(AS)  -o $@ $<
 
-.s.o:
-	$(AS) -g -o $@ $<
-
-.o.a:
+lib%.a: %.o
 	ar rcs $@ $<
 
 
@@ -55,4 +53,4 @@ clean: cleanproj
 
 cleanproj:
 	cargo clean -p rustos
-	rm -f *.bin *.img *.iso *.rlib *.a *.so *.o
+	rm -f *.bin *.img *.iso *.rlib *.a *.so *.o *.s
