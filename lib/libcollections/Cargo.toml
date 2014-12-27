@@ -7,8 +7,8 @@ authors = [ "you@example.com" ]
 name = "collections"
 
 
-[dependencies.core]
-path = "../libcore"
+#[dependencies.core]
+#path = "../libcore"
 
 [dependencies.alloc]
 path = "../liballoc"

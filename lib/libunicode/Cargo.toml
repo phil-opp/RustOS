@@ -7,5 +7,5 @@ authors = [ "you@example.com" ]
 name = "unicode"
 
 
-[dependencies.core]
-path = "../libcore"
+#[dependencies.core]
+#path = "../libcore"

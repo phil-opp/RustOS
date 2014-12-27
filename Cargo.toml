@@ -12,8 +12,8 @@ crate-type = ["staticlib"]
 git = "https://github.com/ryanra/lazy-static.rs"
 branch = "rustos"
 
-[dependencies.core]
-path = "lib/libcore"
+#[dependencies.core]
+#path = "lib/libcore"
 
 [dependencies.alloc]
 path = "lib/liballoc"

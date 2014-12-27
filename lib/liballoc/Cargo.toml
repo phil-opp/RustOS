@@ -7,8 +7,8 @@ authors = [ "you@example.com" ]
 name = "alloc"
 
 
-[dependencies.core]
-path = "../libcore"
+#[dependencies.core]
+#path = "../libcore"
 
 [features]
 default  = []
