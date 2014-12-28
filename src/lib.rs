@@ -24,9 +24,9 @@ use arch::cpu;
 use pci::Pci;
 use driver::DriverManager;
 use thread::scheduler;
-
+*/
 #[macro_escape]
-mod log;
+mod log;/*
 pub mod arch;
 mod terminal;
 mod panic;*/
