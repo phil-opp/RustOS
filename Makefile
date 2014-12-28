@@ -25,7 +25,7 @@ vb: boot.iso
 target/$(TARGET)/librustos*.a: Cargo.toml libmorestack.a libcompiler-rt.a lib_context.a
 	cargo build --target $(TARGET) --verbose
 
-boot.bin: src/linker.ld boot.o target/$(TARGET)/librustos*.a interrupt.o context.o dependencies.o
+boot.bin: src/linker.ld boot.o target/$(TARGET)/librustos*.a #interrupt.o context.o dependencies.o
 	$(LD) -o $@ -T $^
 
 boot.iso: boot.bin

@@ -161,41 +161,41 @@ pub struct multiboot_info {
 }
 
 impl multiboot_info {
-  
+
   fn has_flag(&self, flag_number: u8) -> bool {
     return (self.flags >> flag_number as uint) & 0x1 == 0x1;
   }
-  
+
   pub unsafe fn multiboot_stuff(&self) {
-    
+
     /* Print out the flags. */
-    debug!("flags = 0x{:x}", self.flags)
-    
-    if self.has_flag(6) {	
-	debug!("mmap_addr = 0x{:x}", self.mmap_addr)
-	debug!("mmap_length = 0x{:x}", self.mmap_length)
-   
-   let mut current: u32 = self.mmap_addr;
-   while current < self.mmap_addr + self.mmap_length {
-    let e: *mut multiboot_mmap_entry = transmute(current);
-    if (*e).typ == 1 {
-      debug!("at 0x{:x}", current)
-      debug!("  size: 0x{:x}", (*e).size)
-      debug!("  addr: 0x{:x}", (*e).addr as u32) // TODO(ryan): if 64-bit arg, then crashes !
-      debug!("  length: 0x{:x}", (*e).len as u32)
-      debug!("  type: 0x{:x}", (*e).typ)
-      
+    //debug!("flags = 0x{:x}", self.flags)
+
+    if self.has_flag(6) {
+      //debug!("mmap_addr = 0x{:x}", self.mmap_addr)
+      //debug!("mmap_length = 0x{:x}", self.mmap_length)
+
+      let mut current: u32 = self.mmap_addr;
+      while current < self.mmap_addr + self.mmap_length {
+        let e: *mut multiboot_mmap_entry = transmute(current);
+        if (*e).typ == 1 {
+          //debug!("at 0x{:x}", current)
+          //debug!("  size: 0x{:x}", (*e).size)
+          //debug!("  addr: 0x{:x}", (*e).addr as u32) // TODO(ryan): if 64-bit arg, then crashes !
+          //debug!("  length: 0x{:x}", (*e).len as u32)
+          //debug!("  type: 0x{:x}", (*e).typ)
+
+        }
+        current += (*e).size + 4;
+
+      }
+    } else {
+      //debug!("no memmap :(");
     }
-    current += (*e).size + 4;
-    
-   } 
-     } else {
-     debug!("no memmap :(");
-     }
   }
 }
 
-  
+
 #[repr(packed)]
 struct multiboot_mmap_entry {
   size: u32,
