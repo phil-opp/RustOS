@@ -1,5 +1,7 @@
-use std::prelude::*;
+use core::prelude::*;
 use core::mem::transmute;
+
+use alloc::boxed::Box;
 
 #[allow(dead_code)]
 #[repr(packed)]

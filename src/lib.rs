@@ -1,4 +1,5 @@
 #![no_std]
+#![feature(associated_types)]
 #![feature(phase)]
 #![allow(ctypes)]
 #![feature(globs)]
@@ -6,13 +7,22 @@
 #![feature(macro_rules)]
 #![feature(lang_items)]
 
-#[phase(plugin)]
-extern crate lazy_static;
+// not directly used, but needed to link to llvm emitted calls
+extern crate rlibc;
+
 #[phase(plugin, link)]
 //extern crate std; // for useful macros and IO interfaces
 extern crate core;
+extern crate alloc;
 extern crate collections;
-extern crate rlibc; // not directly used, but needed to link to llvm emitted calls
+
+#[phase(plugin, link)]
+extern crate lazy_static_spin;
+
+#[phase(plugin)]
+extern crate bitflags;
+
+
 /*
 pub use std::prelude::*;
 
@@ -26,17 +36,21 @@ use driver::DriverManager;
 use thread::scheduler;
 */
 #[macro_escape]
-mod log;/*
-pub mod arch;
+mod log;
+pub mod arch;/*
 mod terminal;
 mod panic;*/
-mod multiboot;/*
-mod allocator;
+mod multiboot;
+mod allocator;/*
 mod thread;
 mod pci;
 mod rtl8139;
 mod driver;
 mod net;
+
+*/
+mod io;
+/*
 
 fn test_allocator() {
   let mut v = vec::Vec::new();
@@ -165,4 +179,15 @@ extern fn eh_personality() {}
 #[lang = "panic_fmt"]
 extern fn panic_fmt(_fmt: &core::fmt::Arguments, _file: &'static str, _line: uint) -> ! {
   loop {}
+}
+
+// for deriving
+#[doc(hidden)]
+mod std {
+  pub use core::clone;
+  pub use core::cmp;
+  pub use core::kinds;
+  pub use core::option;
+  pub use core::fmt;
+  pub use core::hash;
 }

@@ -1,0 +1,8 @@
+[package]
+
+name = "bitflags"
+version = "0.0.1"
+authors = [ "you@example.com" ]
+
+[lib]
+name = "bitflags"

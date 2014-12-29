@@ -1,5 +1,7 @@
-use std::prelude::*;
+use core::prelude::*;
 use core::mem::{transmute, size_of};
+
+use collections::Vec;
 
 static IDT_SIZE: uint = 256;
 
@@ -58,7 +60,7 @@ impl IDT {
   }
   
   pub fn add_entry(&mut self, index: u32, f: unsafe extern "C" fn() -> ()) {
-    *self.table.get_mut(index as uint) =  IDTEntry::new(f);
+    self.table[index as uint] = IDTEntry::new(f);
   }
   
   pub unsafe fn enable(&mut self) {

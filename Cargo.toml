@@ -8,10 +8,6 @@ name = "rustos"
 crate-type = ["staticlib"]
 
 
-[dependencies.lazy_static]
-git = "https://github.com/ryanra/lazy-static.rs"
-branch = "rustos"
-
 #[dependencies.core]
 #path = "lib/libcore"
 
@@ -22,6 +18,13 @@ features = ["external_funcs"]
 
 [dependencies.collections]
 path = "lib/libcollections"
+
+
+[dependencies.bitflags]
+path = "bitflags"
+
+[dependencies.lazy-static-spin]
+git = "https://github.com/Ericson2314/lazy-static-spin"
 
 [dependencies]
 rlibc = "*"

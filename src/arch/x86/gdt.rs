@@ -1,5 +1,7 @@
-use std::prelude::*;
+use core::prelude::*;
 use core::mem::{transmute, size_of};
+
+use collections::Vec;
 
 static GDT_SIZE: uint = 3;
 
@@ -9,9 +11,10 @@ extern "C" {
   
 }
 
+// TODO made pub to get around error
 #[allow(dead_code)]
 #[repr(packed)]
-struct GDTEntry {
+pub struct GDTEntry {
   bytes: [u8,..8]
 }
 

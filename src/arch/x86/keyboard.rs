@@ -1,4 +1,5 @@
-use std::prelude::*; // for bitflags
+use core::prelude::*;
+
 use arch::cpu::Port;
 
 static KEY_CODE_TO_ASCII: &'static [u8] = b"??1234567890-=??qwertyuiop[]\n?asdfghjkl;'`?\\zxcvbnm,./?*? ?"; 
@@ -9,18 +10,18 @@ pub struct Keyboard {
   data_port: Port
 }
 
-bitflags!(
+bitflags! {
   flags Status: u8 {
-    static OUTPUT_FULL = 0b00000001,
-    static INPUT_FULL = 0b00000010,
-    static SYSTEM = 0b00000100,
-    static COMMAND = 0b00001000,
-    static KEYBOARD_LOCKED = 0b00010000,
-    static AUX_OUTPUT_FULL = 0b00100000,
-    static TIMEOUT = 0b01000000,
-    static PARITY_ERROR = 0b10000000
+    const OUTPUT_FULL     = 0b_00000001,
+    const INPUT_FULL      = 0b_00000010,
+    const SYSTEM          = 0b_00000100,
+    const COMMAND         = 0b_00001000,
+    const KEYBOARD_LOCKED = 0b_00010000,
+    const AUX_OUTPUT_FULL = 0b_00100000,
+    const TIMEOUT         = 0b_01000000,
+    const PARITY_ERROR    = 0b_10000000
   }
-)
+}
 
 impl Keyboard {
 
@@ -34,7 +35,7 @@ impl Keyboard {
   
   #[allow(dead_code)]
   fn get_status(&mut self) -> Status {
-    Status::from_bits(self.control_port.read_u8().unwrap()).unwrap()
+    Status::from_bits(self.control_port.in_b()).unwrap()
   }
   
   /*
@@ -44,7 +45,7 @@ impl Keyboard {
   }*/
   
   pub fn got_interrupted(&mut self) {
-    let keycode = self.data_port.read_u8().unwrap();
+    let keycode = self.data_port.in_b();
     match KEY_CODE_TO_ASCII.get(keycode as uint) {
       Some(ascii) => {
 	let func = self.callback;
