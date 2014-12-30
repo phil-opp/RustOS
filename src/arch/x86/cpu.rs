@@ -12,7 +12,7 @@ use arch::keyboard::Keyboard;
 
 // TODO remove box hack. It says it has a global destructor but I don't know why
 lazy_static_spin! {
-  static CURRENT_CPU: *mut CPU = {
+  pub static CURRENT_CPU: *mut CPU = {
     unsafe {
       let cpu: Box<UnsafeCell<CPU>> = box UnsafeCell::new(CPU::new());
       let ret = cpu.get();

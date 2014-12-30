@@ -5,7 +5,7 @@ authors = [ "you@example.com" ]
 
 [lib]
 name = "rustos"
-crate-type = ["staticlib"]
+crate-type = [ "staticlib" ]
 
 
 #[dependencies.core]
@@ -14,7 +14,7 @@ crate-type = ["staticlib"]
 [dependencies.alloc]
 path = "lib/liballoc"
 default-features = false
-features = ["external_funcs"]
+features = [ "external_crate" ]
 
 [dependencies.collections]
 path = "lib/libcollections"
@@ -22,6 +22,9 @@ path = "lib/libcollections"
 
 [dependencies.bitflags]
 path = "bitflags"
+
+[dependencies.external]
+path = "bump-pointer"
 
 [dependencies.lazy-static-spin]
 git = "https://github.com/Ericson2314/lazy-static-spin"

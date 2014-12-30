@@ -13,4 +13,8 @@ name = "alloc"
 [features]
 default  = []
 external_funcs = []
-external_crate = []
+external_crate = [ "external" ]
+
+[dependencies.external]
+path = "../../bump-pointer"
+optional = true

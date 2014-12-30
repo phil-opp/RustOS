@@ -16,6 +16,8 @@ extern crate core;
 extern crate alloc;
 extern crate collections;
 
+extern crate "external" as bump_ptr;
+
 #[phase(plugin, link)]
 extern crate lazy_static_spin;
 
@@ -23,14 +25,13 @@ extern crate lazy_static_spin;
 extern crate bitflags;
 
 
-/*
-pub use std::prelude::*;
 
-use collections::vec;
-*/
-use multiboot::multiboot_info;/*
-use allocator::set_allocator;
-use arch::cpu;
+use core::prelude::*;
+
+use collections::Vec;
+
+use multiboot::multiboot_info;
+use arch::cpu;/*
 use pci::Pci;
 use driver::DriverManager;
 use thread::scheduler;
@@ -40,20 +41,18 @@ mod log;
 pub mod arch;/*
 mod terminal;
 mod panic;*/
-mod multiboot;
-mod allocator;/*
+mod multiboot;/*
 mod thread;
 mod pci;
 mod rtl8139;
 mod driver;
 mod net;
-
 */
 mod io;
-/*
+
 
 fn test_allocator() {
-  let mut v = vec::Vec::new();
+  let mut v = Vec::new();
 
   debug!("Testing allocator with a vector push");
   v.push("   hello from a vector!");
@@ -69,23 +68,27 @@ fn put_char(c: u8) {
     print!("{:c}", c as char);
 }
 
-lazy_static! {
-  static ref TEST: Vec<&'static str> = {
-    let mut v = Vec::new();
+lazy_static_spin! {
+  static TEST: *mut Vec<&'static str> = {
+    let mut v = box Vec::new();
     v.push("hi from lazy sttaic");
-    v
+    unsafe {
+      use core::mem::transmute;
+      let ptr = transmute(&*v);
+      core::mem::forget(v);
+      ptr
+    }
   };
 }
-*/
+
 #[no_mangle]
 pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
   unsafe {
-    /*
-    set_allocator((15u * 1024 * 1024) as *mut u8, (20u * 1024 * 1024) as *mut u8);
-    panic::init();
+    bump_ptr::set_allocator((15u * 1024 * 1024) as *mut u8, (20u * 1024 * 1024) as *mut u8);
+    //panic::init();
     test_allocator();
 
-
+    /*
     if magic != multiboot::MULTIBOOT_BOOTLOADER_MAGIC {
       kpanic!("Multiboot magic is invalid");
     } else {
@@ -112,7 +115,7 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
     info!("Kernel is done!");
     */
     loop {
-      //(*cpu).idle()
+      (**cpu::CURRENT_CPU).idle()
     }
   }
 }
@@ -131,22 +134,7 @@ fn pci_stuff() {
   }
 
 }
-
-#[no_mangle]
-pub extern "C" fn malloc(size: uint) -> *mut u8 {
-    allocator::malloc(size)
-}
-
-#[no_mangle]
-pub extern "C" fn free(ptr: *mut u8) {
-  allocator::free(ptr)
-}
-
-#[no_mangle]
-pub extern "C" fn realloc(ptr: *mut u8, size: uint) -> *mut u8 {
-  allocator::realloc(ptr, size)
-}
-
+*/
 #[no_mangle]
 pub extern "C" fn debug(s: &'static str, u: u32) {
   debug!("{} 0x{:x}", s, u)
@@ -159,14 +147,13 @@ pub extern "C" fn __morestack() {
 
 #[no_mangle]
 pub extern "C" fn abort() -> ! {
-    panic::abort();
+    unsafe { core::intrinsics::abort(); }
 }
 
 #[no_mangle]
 pub extern "C" fn callback() {
   debug!("    in an interrupt!");
 }
-*/
 
 // TODO(ryan): figure out what to do with these:
 
