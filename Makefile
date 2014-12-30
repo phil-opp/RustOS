@@ -6,7 +6,7 @@ QEMU=qemu-system-i386
 TARGET=i686-unknown-linux-gnu
 QEMUARGS=-device rtl8139,vlan=0 -net user,id=net0,vlan=0 -net dump,vlan=0,file=/tmp/rustos-dump.pcap
 
-.PHONY: all clean cleanproj run debug vb
+.PHONY: all clean cleanproj run debug vb target/$(TARGET)/librustos*.a
 
 all: boot.bin
 
