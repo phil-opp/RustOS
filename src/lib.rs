@@ -25,7 +25,6 @@ extern crate lazy_static_spin;
 extern crate bitflags;
 
 
-
 use core::prelude::*;
 
 use collections::Vec;
@@ -38,16 +37,16 @@ use thread::scheduler;
 */
 #[macro_escape]
 mod log;
-pub mod arch;/*
+pub mod arch;
 mod terminal;
-mod panic;*/
-mod multiboot;/*
-mod thread;
-mod pci;
-mod rtl8139;
-mod driver;
-mod net;
-*/
+//mod panic;
+mod multiboot;
+//mod thread;
+//mod pci;
+//mod rtl8139;
+//mod driver;
+//mod net;
+
 mod io;
 
 

@@ -1,24 +1,22 @@
-use std::prelude::*;
-use std::io::IoResult;
+use core::prelude::*;
 
 use arch::vga;
-use panic::panic_message;
 
 // TODO(ryan): next line is breaking abstractions (but can't find a nice way to init it...)
-lazy_static! {
-  pub static ref TERMINAL: Terminal = {
+lazy_static_spin! {
+  pub static TERMINAL: Terminal = {
     Terminal::init()
   };
 }
 
 struct Point {
-    x: uint,
-    y: uint
+  x: uint,
+  y: uint
 }
 
 pub struct Terminal {
-    current: Point,
-    vga: vga::VGA
+  current: Point,
+  vga: vga::VGA
 }
 
 impl Terminal {
@@ -35,7 +33,7 @@ impl Terminal {
     if c == '\n' as u8 {
       self.current = Point { x : 0, y : (self.current.y + 1) };
     } else {
-      self.vga.put((self.current.x, self.current.y), c, vga::White, vga::Black);
+      self.vga.put((self.current.x, self.current.y), c, vga::Color::White, vga::Color::Black);
     }
     
     self.current.x += 1;
@@ -55,25 +53,25 @@ impl Terminal {
       for i in range(0, self.vga.x_max()) {
 	let (chr, fg, bg) = match self.vga.get((i, j)) {
 	  Some(tup) => tup,
-	  None => panic_message("error in Terminal.scroll")
+	  None => panic!("error in Terminal.scroll")
 	};
 	self.vga.put((i, j - 1), chr, fg, bg);
       }
     }
     for i in range(0, self.vga.x_max()) {
       let y_max = self.vga.y_max();
-      self.vga.put((i, y_max - 1), 'a' as u8, vga::Black, vga::Black);
+      self.vga.put((i, y_max - 1), 'a' as u8, vga::Color::Black, vga::Color::Black);
     }
   }
   
   pub fn clear_screen(&mut self) {
     for i in range(0, self.vga.x_max()) {
-	for j in range(0, self.vga.y_max()) {
-	  self.vga.put((i, j), 0 as u8, vga::Black, vga::Black);
-	}
+      for j in range(0, self.vga.y_max()) {
+	self.vga.put((i, j), 0 as u8, vga::Color::Black, vga::Color::Black);
+      }
     }
   }
-    
+  
   pub fn print(&mut self, s:  &'static str) {
     for c in s.chars() {
       self.put_char(c as u8);
@@ -86,10 +84,12 @@ impl Terminal {
   }
   
 }
+/*
+impl io::Writer for Terminal {
 
-impl Writer for Terminal {
-
-  fn write(&mut self, buf: &[u8]) -> IoResult<()> {
+  type Err = ();
+  
+  fn write(&mut self, buf: &[u8]) -> Result<()> {
     for &c in buf.iter() {
       self.put_char(c);
     }
@@ -97,3 +97,4 @@ impl Writer for Terminal {
   }
   
 }
+*/
