@@ -1,8 +1,8 @@
 use core::prelude::*;
 use core::mem::transmute;
 
-pub static VGA_START: *mut u16 = 0xb8000 as *mut u16; // TODO(ryan) this shouldn't be exposed
-pub static VGA_MAX: (uint, uint) = (80, 24);
+static VGA_START: *mut u16 = 0xb8000 as *mut u16;
+static VGA_MAX: (uint, uint) = (80, 24);
 
 pub enum Color {
     Black      = 0,
@@ -23,9 +23,9 @@ pub enum Color {
     White      = 15,
 }
 
-pub struct VGA { // TODO(ryan) struct fields shouldn't be exposed
-  pub mapped: *mut u16,
-  pub max: (uint, uint)
+pub struct VGA {
+  mapped: *mut u16,
+  max:    (uint, uint)
 }
 
 impl VGA {
