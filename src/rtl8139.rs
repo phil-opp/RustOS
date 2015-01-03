@@ -1,6 +1,6 @@
 // An attempt at an rtl8139 ethernet card driver
-use std::prelude::*;
-use std::io::IoResult;
+use core::prelude::*;
+//use std::io::IoResult;
 use core::mem::transmute;
 
 use arch::cpu::Port;
@@ -59,10 +59,10 @@ impl Driver for Rtl8139 {
 
 impl NetworkDriver for Rtl8139 {
 
-  fn put_frame(&mut self, bytes: &[u8]) -> IoResult<()> {
-    let slice_bytes: ::std::raw::Slice<u8> = unsafe { transmute(bytes) };
+  fn put_frame(&mut self, bytes: &[u8]) -> Result<(), ()> {
+    let slice_bytes: ::core::raw::Slice<u8> = unsafe { transmute(bytes) };
 
-    trace!("sending {} bytes", slice_bytes.len)
+    trace!("sending {} bytes", slice_bytes.len);
     
 
     self.transmit_address[self.descriptor].out_l(slice_bytes.data as u32);

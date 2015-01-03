@@ -1,6 +1,9 @@
-use std::io::IoResult;
-use std::prelude::*;
+use core::prelude::*;
+use core::num::Int;
 use core::mem::{size_of, transmute};
+
+
+use alloc::boxed::Box;
 
 use driver::NetworkDriver;
 
@@ -9,28 +12,28 @@ pub struct NetworkStack<'a> {
 }
 
 impl<'a> NetworkStack<'a> {
-  
-  pub fn new(card: Box<NetworkDriver>) -> NetworkStack<'a> { 
+
+  pub fn new(card: Box<NetworkDriver + 'a>) -> NetworkStack<'a> {
     NetworkStack { card: card }
   }
-  
-  pub fn test(&mut self) -> IoResult<()> {
+
+  pub fn test(&mut self) -> Result<(), ()> {
     let address = self.card.address();
-      
+
     for i in range(0, 10u) {
-      self.card.put_frame(format!("\nhello, etherworld! sending frame # {} !\n", i).as_bytes()).ok();
+      //self.card.put_frame(format!("\nhello, etherworld! sending frame # {} !\n", i).as_bytes()).ok();
     }
-      
+
     let source = address;
     let destination = [0xff, 0xff, 0xff, 0xff, 0xff, 0xff];
-      
+
     let raw = [b'u', b'd', b'p', b'!'];
     let u_header = UdpHeader::new(10, 10, raw.len() as u16);
     let i_header = IpHeader::new((raw.len() + size_of::<UdpHeader>()) as u16, 0x11, 15, 15);
     let header = EthernetHeader::new(source, destination, 0x0800);
-      
+
     let to_send = &(header, i_header, u_header, raw);
-      
+
     self.card.put_frame(unsafe { transmute ((to_send, size_of::<(EthernetHeader, IpHeader, UdpHeader)>() + raw.len())) }).ok();
     Ok(())
   }
@@ -65,18 +68,18 @@ struct IpHeader {
   version_length: u8,
   tos: u8,
   length: u16,
-  
+
   id: [u8,..3],
   flags_fragment: u8,
-  
+
   ttl: u8,
   protocol: u8,
   crc: u16,
-  
+
   source: u32,
-  
+
   destination: u32,
-  
+
 }
 
 impl IpHeader {

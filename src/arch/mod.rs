@@ -1,4 +1,11 @@
-pub use self::imp::*;
+pub use self::imp::{
+  vga,
+  context,
+  cpu,
+  idt,
+  gdt,
+  keyboard,
+};
 
 #[cfg(target_arch = "x86")]
 #[path="x86"]

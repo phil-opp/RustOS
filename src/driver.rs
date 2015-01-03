@@ -1,5 +1,8 @@
-use std::prelude::*;
-use std::io::IoResult;
+use core::prelude::*;
+
+use alloc::boxed::Box;
+
+use collections::Vec;
 
 pub trait Driver {
 
@@ -15,7 +18,7 @@ pub trait DriverManager {
 
 pub trait NetworkDriver: Driver {
 
-  fn put_frame(&mut self, &[u8]) -> IoResult<()>;
+  fn put_frame(&mut self, &[u8]) -> Result<(), ()>;
   
   fn address(&mut self) -> [u8,..6];
   

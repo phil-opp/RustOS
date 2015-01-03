@@ -30,11 +30,11 @@ use core::prelude::*;
 use collections::Vec;
 
 use multiboot::multiboot_info;
-use arch::cpu;/*
+use arch::cpu;
 use pci::Pci;
 use driver::DriverManager;
-use thread::scheduler;
-*/
+//use thread::scheduler;
+
 #[macro_escape]
 mod log;
 pub mod arch;
@@ -42,10 +42,10 @@ mod terminal;
 mod panic;
 mod multiboot;
 //mod thread;
-//mod pci;
-//mod rtl8139;
-//mod driver;
-//mod net;
+mod pci;
+mod rtl8139;
+mod driver;
+mod net;
 
 mod io;
 
@@ -84,19 +84,18 @@ lazy_static_spin! {
 pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
   unsafe {
     bump_ptr::set_allocator((15u * 1024 * 1024) as *mut u8, (20u * 1024 * 1024) as *mut u8);
-    //panic::init();
+    panic::init();
     test_allocator();
 
-    /*
     if magic != multiboot::MULTIBOOT_BOOTLOADER_MAGIC {
-      kpanic!("Multiboot magic is invalid");
+      panic!("Multiboot magic is invalid");
     } else {
       debug!("Multiboot magic is valid. Info at 0x{:x}", info as u32);
       (*info).multiboot_stuff();
     }
 
-    debug!("{}", (*TEST)[0]);
-    let cpu = cpu::CPU::current();
+    debug!("{}", (**TEST)[0]);
+    let cpu = *cpu::CURRENT_CPU;
 
     (*cpu).make_keyboard(put_char);
 
@@ -107,19 +106,20 @@ pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
 
     debug!("start scheduling...");
 
-    scheduler::thread_stuff();
+    //scheduler::thread_stuff();
 
     pci_stuff();
 
     info!("Kernel is done!");
-    */
     loop {
-      (**cpu::CURRENT_CPU).idle()
+      (*cpu) .idle()
     }
   }
 }
-/*
+
 fn pci_stuff() {
+  use pci::*;
+
   let mut pci = Pci::new();
   pci.init();
   let mut drivers = (&mut pci as &mut DriverManager).get_drivers();
@@ -133,7 +133,7 @@ fn pci_stuff() {
   }
 
 }
-*/
+
 #[no_mangle]
 pub extern "C" fn debug(s: &'static str, u: u32) {
   debug!("{} 0x{:x}", s, u)

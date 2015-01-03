@@ -1,6 +1,11 @@
-use std::prelude::*;
-use std::io::IoResult;
+use core::prelude::*;
+//use std::io::IoResult;
 use core::mem::{transmute, size_of};
+
+use alloc;
+use alloc::boxed::Box;
+
+use collections::Vec;
 
 use arch::cpu::Port;
 use rtl8139::Rtl8139;
@@ -22,7 +27,7 @@ impl PortGranter {
 
   pub fn get(&self, offset: uint) -> Port {
     if offset as u16 >= self.limit as u16 { // TODO(ryan): doesn't take width into consideration
-      kassert!(false);
+      panic!();
     }
     let address: u16 = (self.base + offset) as u16; // TODO(ryan): overflow ?
     Port::new(address)
@@ -79,7 +84,7 @@ enum HeaderType {
 }
 
 fn read_into<'a, T, S>(slice: &'a [S]) -> Box<T> {
-  kassert!(size_of::<S>() * slice.len() == size_of::<T>());
+  assert!(size_of::<S>() * slice.len() == size_of::<T>());
   let ret: Box<T> = unsafe { transmute(slice.as_ptr()) };
   return ret
 }
@@ -96,14 +101,14 @@ impl Pci {
   
   fn build_address(bus: u8, device: u8, function: u8, offset: u8) -> u32 {
     if (function & 0x03 != 0x00) || (device >= 0x1 << 5) || (function >= 0x1 << 3)  {
-      kassert!(false)
+      panic!();
       return 0;
     } else {
       return (0x1 as u32 << 31) | (bus as u32 << 16) | (device as u32 << 11) | (function as u32 << 8) | offset as u32;
     }
   }
   
-  pub fn read(&mut self, bus: u8, device: u8, function: u8, offset: u8) -> IoResult<u32> {
+  pub fn read(&mut self, bus: u8, device: u8, function: u8, offset: u8) -> Result<u32, ()> {
       let address = Pci::build_address(bus, device, function, offset);
       self.address_port.out_l(address);
       //Port::io_wait();
@@ -112,10 +117,10 @@ impl Pci {
   }
   
   pub fn read_bytes(&mut self, bus: u8, device: u8, start_address: u16, size: u16) -> Vec<u32> {
-    kassert!(size % 4 == 0)
-    kassert!(start_address % 4 == 0)
+    assert_eq!(size % 4, 0);
+    assert_eq!(start_address % 4, 0);
     
-    let mut v = vec!();
+    let mut v = Vec::new();
     for i in range(0_u16, size / 4) {
       let (offset, function): (u8, u8) = unsafe { transmute((start_address + i*4) as u16) };
       v.push(self.read(bus, device, function, offset).unwrap());
@@ -138,11 +143,11 @@ impl Pci {
     
     let shared: SharedHeader = *self.read_as(bus, device, 0);
     let rest = match shared.header_type {
-      0x00 => Basic(*self.read_as(bus, device, size_of::<SharedHeader>() as u16)),
-      0x01 => Todo,
-      0x02 => Todo,
+      0x00 => HeaderType::Basic(*self.read_as(bus, device, size_of::<SharedHeader>() as u16)),
+      0x01 => HeaderType::Todo,
+      0x02 => HeaderType::Todo,
       _ => {
-	debug!("weird header")
+	debug!("weird header");
 	return None
       }
     };
@@ -170,7 +175,7 @@ impl DriverManager for Pci {
 	    //debug!("    header type 0x{:x}", shared.header_type)
 	    //debug!("    status 0x{:x}, command 0x{:x}", shared.status, shared.command)
 	    match header.rest {
-	      Basic(next) => {
+	      HeaderType::Basic(next) => {
 		for &addr in next.base_addresses.iter() {
 		  //debug!("        base_address: 0x{:x}", addr)
 		}
@@ -178,7 +183,8 @@ impl DriverManager for Pci {
 		  io_offset = (next.base_addresses[0] >> 2) << 2;
 		  self.address_port.out_l(Pci::build_address(bus as u8, device as u8, 0, 4));
 		  self.data_port.out_w(shared.command | 0x4);
-		  debug!("command after bus mastering is 0x{:x}", self.read_header(bus as u8, device as u8).unwrap().shared.command)
+		  debug!("command after bus mastering is 0x{:x}",
+                         self.read_header(bus as u8, device as u8).unwrap().shared.command);
 		}
 		
 	      }
@@ -188,8 +194,8 @@ impl DriverManager for Pci {
 	}
       }
     }
-    debug!("{:u} found pci devices ({:u} not found)", device_count, no_device_count)
-    let mut ret = vec!();
+    debug!("{} found pci devices ({} not found)", device_count, no_device_count);
+    let mut ret = Vec::new();
     if io_offset != 0 {
       let manifest = Rtl8139::manifest();
       let granter = PortGranter { base: io_offset as uint, limit: manifest.register_limit as uint };
