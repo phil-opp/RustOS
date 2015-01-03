@@ -92,8 +92,8 @@ impl GDT {
       let limit: u16 = (GDT_SIZE*size_of::<GDTEntry>()) as u16;
       let (base, _): (u32, u32) = transmute(self.table.as_slice());
       let mut real = GDTReal { limit: limit, base: base };
-      debug!("limit: {:u}", limit);
-      debug!("base: {:u}", base);
+      debug!("limit: {}", limit);
+      debug!("base: {}", base);
       
       lgdt(&mut real);
     }

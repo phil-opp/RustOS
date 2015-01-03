@@ -81,7 +81,7 @@ impl CPU {
         &Some(ref mut k) => k.got_interrupted(),
         &None            => unsafe { debug("no keyboard installed", 0) }
       },
-      _ => {debug!("interrupt with no handler: {:u}", interrupt_number); loop {};}
+      _ => {debug!("interrupt with no handler: {}", interrupt_number); loop {};}
     }
     self.acknowledge_irq(interrupt_number);
   }
@@ -230,11 +230,10 @@ impl Port
     Ok(())
   }
 }
-
 /*
-impl Reader for Port {
+impl ::io::Reader for Port {
 
-  type Err = (); // TODO use bottom type
+  //type Err = (); // TODO use bottom type
 
   //fn read_u8(&mut self) -> Result<u8, ()> {
   //  Ok(self.in_b())
@@ -248,22 +247,24 @@ impl Reader for Port {
   }
 
 }
+*/
+impl ::io::Writer for Port {
 
-impl Writer for Port {
-
-  type Err = ();
+  //type Err = (); // TODO use bottom type
 
   //fn write_u8(&mut self, byte: u8) -> Result<(), ()> {
   //  self.out_b(byte);
   //  Ok(())
   //}
 
-  fn write(&mut self, buf: &[u8]) -> Result<(), ()> {
+  fn write(&mut self, buf: &[u8]) -> Result<uint, ()> {
     for &byte in buf.iter() {
       self.out_b(byte);
     }
-    Ok(())
+    Ok(buf.len())
   }
 
+  fn flush(&mut self) -> Result<(), ()> {
+    Ok(())
+  }
 }
- */

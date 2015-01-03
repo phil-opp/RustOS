@@ -1,4 +1,3 @@
-use core::prelude::*;
 use core::mem::transmute;
 
 use alloc::boxed::Box;

@@ -2,6 +2,16 @@ use core::prelude::*;
 use terminal::{TERMINAL, Terminal};
 use core::mem::transmute;
 
+#[lang = "panic_fmt"] #[inline(never)] #[cold]
+pub extern fn panic_impl(msg: ::core::fmt::Arguments,
+                         file: &'static str,
+                         line: uint) -> !
+{
+  use io::Writer;
+  let _ = write!(term(), "{}:{} {}", file, line, msg);
+  unsafe { ::core::intrinsics::abort(); }
+}
+
 pub fn term() -> &'static mut Terminal {
     unsafe {transmute(TERMINAL.deref())}
 }

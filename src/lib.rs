@@ -39,7 +39,7 @@ use thread::scheduler;
 mod log;
 pub mod arch;
 mod terminal;
-//mod panic;
+mod panic;
 mod multiboot;
 //mod thread;
 //mod pci;
@@ -64,7 +64,7 @@ fn test_allocator() {
 }
 
 fn put_char(c: u8) {
-    print!("{:c}", c as char);
+    __print!("{}", c as char);
 }
 
 lazy_static_spin! {
@@ -161,11 +161,6 @@ extern fn stack_exhausted() {}
 
 #[lang = "eh_personality"]
 extern fn eh_personality() {}
-
-#[lang = "panic_fmt"]
-extern fn panic_fmt(_fmt: &core::fmt::Arguments, _file: &'static str, _line: uint) -> ! {
-  loop {}
-}
 
 // for deriving
 #[doc(hidden)]
