@@ -16,14 +16,13 @@ extern crate core;
 extern crate alloc;
 extern crate collections;
 
-extern crate "external" as bump_ptr;
-
-#[phase(plugin, link)]
-extern crate lazy_static_spin;
 
 #[phase(plugin)]
 extern crate bitflags;
-
+extern crate "external" as bump_ptr;
+#[phase(plugin, link)]
+extern crate lazy_static_spin;
+extern crate spinlock;
 
 use core::prelude::*;
 
@@ -83,6 +82,8 @@ lazy_static_spin! {
 #[no_mangle]
 pub extern "C" fn main(magic: u32, info: *mut multiboot_info) {
   unsafe {
+    terminal::init_global();
+
     bump_ptr::set_allocator((15u * 1024 * 1024) as *mut u8, (20u * 1024 * 1024) as *mut u8);
     panic::init();
     test_allocator();

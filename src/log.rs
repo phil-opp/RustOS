@@ -1,9 +1,8 @@
 //#[macro_export]
 macro_rules! __print(
   ($($arg:tt)*) => ({
-    use panic::term;
     use io::Writer;
-    write!(term(), $($arg)*).ok();
+    write!(::terminal::GLOBAL.lock(), $($arg)*).ok();
   })
 );
 

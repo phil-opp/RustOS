@@ -27,7 +27,10 @@ path = "bitflags"
 path = "bump-pointer"
 
 [dependencies.lazy-static-spin]
-git = "https://github.com/Ericson2314/lazy-static-spin"
+git = "https://github.com/RustOS-Fork-Holding-Ground/lazy-static-spin"
+
+[dependencies.spinlock]
+git = "https://github.com/RustOS-Fork-Holding-Ground/spinlock-rs"
 
 [dependencies]
 rlibc = "*"

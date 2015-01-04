@@ -1,94 +1,56 @@
 use core::prelude::*;
-use core::mem::transmute;
+use core::cell::UnsafeCell;
 
-static VGA_START: *mut u16 = 0xb8000 as *mut u16;
-static VGA_MAX: (uint, uint) = (80, 24);
 
+// TODO(john) make these a bit less hard coded
+pub const X_MAX: uint = 80;
+pub const Y_MAX: uint = 24;
+
+pub type Buffer = [[Entry, ..X_MAX], ..Y_MAX];
+
+extern {
+  #[link_name = "vga_buffer"]
+  pub static mut GLOBAL: UnsafeCell<Buffer>;
+}
+
+#[deriving(Eq, PartialEq, Ord, PartialOrd, Copy, Clone)]
+#[repr(u8)]
 pub enum Color {
-    Black      = 0,
-    Blue       = 1,
-    Green      = 2,
-    Cyan       = 3,
-    Red        = 4,
-    Pink       = 5,
-    Brown      = 6,
-    LightGray  = 7,
-    DarkGray   = 8,
-    LightBlue  = 9,
-    LightGreen = 10,
-    LightCyan  = 11,
-    LightRed   = 12,
-    LightPink  = 13,
-    Yellow     = 14,
-    White      = 15,
+  Black      = 0,
+  Blue       = 1,
+  Green      = 2,
+  Cyan       = 3,
+  Red        = 4,
+  Pink       = 5,
+  Brown      = 6,
+  LightGray  = 7,
+  DarkGray   = 8,
+  LightBlue  = 9,
+  LightGreen = 10,
+  LightCyan  = 11,
+  LightRed   = 12,
+  LightPink  = 13,
+  Yellow     = 14,
+  White      = 15,
 }
 
-pub struct VGA {
-  mapped: *mut u16,
-  max:    (uint, uint)
-}
+pub struct Entry(u16);
 
-impl VGA {
+//impl Copy for Entry { }
 
-  #[inline(always)]
-  pub fn new() -> VGA {
-    VGA { mapped: VGA_START, max: VGA_MAX }
+impl Entry
+{
+  pub fn new(character: u8, foreground: Color, background: Color) -> Entry
+  {
+    let color = (background as u8 << 4) | (foreground as u8);
+    Entry((color as u16 << 8) | (character as u16))
   }
 
-  pub fn put(&mut self, point: (uint, uint), chr: u8, fg: Color, bg: Color) -> bool {
-      let (desired_x, desired_y) = point;
-      let (my_x, my_y) = self.max;
-      if desired_x >= my_x || desired_y >= my_y {
-	false
-      } else {
-	unsafe {
-	  let as_mut: *mut u16 = transmute(self.mapped.offset((my_x * desired_y + desired_x) as int));
-	  *as_mut = make_vgaentry(chr, make_color(fg, bg));
-	}
-	true
-      }
-  }
-  
-  pub fn get(&mut self, point: (uint, uint)) -> Option<(u8, Color, Color)> {
-    let (desired_x, desired_y) = point;
-      let (my_x, my_y) = self.max;
-      if desired_x >= my_x || desired_y >= my_y {
-	None
-      } else {
-	unsafe {
-	  let entry = self.mapped.offset((my_x * desired_y + desired_x) as int);
-	  Some(get_vgaentry(*entry))
-	}
-      }
-  }
-  
-  pub fn x_max(&self) -> uint {
-    let (x, _) = self.max;
-    x as uint
-  }
+  pub fn eliminate(Entry(bits) : Entry) -> (u8, Color, Color) {
+    use core::mem::transmute;
 
-  pub fn y_max(&self) -> uint {
-    let (_, y) = self.max;
-    y as uint
+    (bits as u8,
+     unsafe { transmute((bits >> 6) as u8) },
+     unsafe { transmute(((bits >> 4) & 0x0f) as u8) })
   }
-  
-}
-
-fn make_color(fg: Color, bg: Color) -> u8 {
-  (fg as u8) | (bg as u8) << 4
-}
-
-
-fn get_vgaentry(entry: u16) -> (u8, Color, Color) {
-  unsafe { 
-    let (c, color): (u8, u8) = transmute(entry);
-    (c, transmute(color & 0xf), transmute(color >> 4))
-  }
-}
-
-fn make_vgaentry(c: u8, color_entry: u8) -> u16 {
-  let c8: u8 = c as u8;
-  let c16: u16 = c8 as u16;
-  let color16: u16 = color_entry as u16;
-  c16 | color16 << 8
 }

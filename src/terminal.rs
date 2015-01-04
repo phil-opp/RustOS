@@ -1,89 +1,89 @@
 use core::prelude::*;
+use core::cell::UnsafeCell;
+
+use spinlock::Spinlock;
 
 use arch::vga;
 
-// TODO(ryan): next line is breaking abstractions (but can't find a nice way to init it...)
-lazy_static_spin! {
-  pub static TERMINAL: Terminal = {
-    Terminal::init()
-  };
-}
+// TODO(john): next line is still breaking abstractions (but I can't
+// find a nice way to init it either...)
+pub static GLOBAL: Spinlock<Terminal> = Spinlock {
+  lock: ::core::atomic::INIT_ATOMIC_BOOL,
+  data: UnsafeCell {
+    value: Terminal {
+      current: Point(0,0),
+      vga: unsafe { 0 as *mut vga::Buffer } //&mut vga::GLOBAL.value
+    }
+  },
+};
 
-struct Point {
-  x: uint,
-  y: uint
-}
+struct Point(uint, uint);
 
 pub struct Terminal {
   current: Point,
-  vga: vga::VGA
+  vga:     *mut vga::Buffer
 }
 
-impl Terminal {
-
-  pub fn init() -> Terminal {
-    Terminal::new(vga::VGA::new())
+impl Terminal
+{
+  fn get_vga_mut(&mut self) -> &mut vga::Buffer {
+    unsafe { &mut *self.vga }
   }
 
-  pub fn new(vga: vga::VGA) -> Terminal {
-    Terminal { vga: vga, current: Point {x: 0, y: 0} }
-  }
-
-  pub fn put_char(&mut self, c: u8) {
+  fn put_char(&mut self, c: u8) {
     if c == '\n' as u8 {
-      self.current = Point { x : 0, y : (self.current.y + 1) };
+      self.current = Point(0, self.current.1 + 1);
     } else {
-      self.vga.put((self.current.x, self.current.y), c, vga::Color::White, vga::Color::Black);
+      self.get_vga_mut()[self.current.1][self.current.0] =
+        vga::Entry::new(c, vga::Color::White, vga::Color::Black);
+      self.current.0 += 1;
     }
 
-    self.current.x += 1;
-    if self.current.x >= self.vga.x_max() {
-      self.current.x = 0;
-      self.current.y += 1;
+    // line wrap
+    if self.current.0 >= vga::X_MAX {
+      self.current.0 = 0;
+      self.current.1 += 1;
     }
-    if self.current.y >= self.vga.y_max() {
+
+    if self.current.1 >= vga::Y_MAX {
       self.scroll();
-      self.current.y = self.vga.y_max() - 1;
+      self.current.1 = vga::Y_MAX - 1;
     }
   }
 
 
-  fn scroll(&mut self) {
-    for j in range(1, self.vga.y_max()) {
-      for i in range(0, self.vga.x_max()) {
-        let (chr, fg, bg) = match self.vga.get((i, j)) {
-          Some(tup) => tup,
-          None => panic!("error in Terminal.scroll")
-        };
-        self.vga.put((i, j - 1), chr, fg, bg);
-      }
+  fn scroll(&mut self)
+  {
+    let mut rows = self.get_vga_mut().iter_mut();
+
+    let mut n     = rows.next();
+    let mut suc_n = rows.next();
+
+    while let (&Some(ref mut a), &Some(ref mut b)) = (&mut n, &mut suc_n) {
+      ::core::mem::swap(*a, *b); // TODO(john) just need to copy b -> a
+      n = suc_n;
+      suc_n = rows.next();
     }
-    for i in range(0, self.vga.x_max()) {
-      let y_max = self.vga.y_max();
-      self.vga.put((i, y_max - 1), 'a' as u8, vga::Color::Black, vga::Color::Black);
+    unsafe {
+      *n.unwrap() = ::core::mem::zeroed(); // last row
     }
   }
 
   pub fn clear_screen(&mut self) {
-    for i in range(0, self.vga.x_max()) {
-      for j in range(0, self.vga.y_max()) {
-        self.vga.put((i, j), 0 as u8, vga::Color::Black, vga::Color::Black);
-      }
+    unsafe {
+      *self.get_vga_mut() = ::core::mem::zeroed();
     }
   }
-
-  pub fn print(&mut self, s:  &'static str) {
-    for c in s.chars() {
-      self.put_char(c as u8);
-    }
-  }
-
-  pub fn println(&mut self, s:  &'static str) {
-    self.print(s);
-    self.put_char('\n' as u8);
-  }
-
 }
+
+pub fn init_global() {
+  let mut guard = GLOBAL.lock();
+  unsafe {
+    guard.vga = vga::GLOBAL.get();
+  }
+  guard.clear_screen();
+}
+
 
 impl ::io::Writer for Terminal
 {
