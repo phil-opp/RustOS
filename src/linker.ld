@@ -7,11 +7,10 @@ ENTRY(_start)
  *kernel image. */
 SECTIONS
 {
-  /* VGA Buffer */
-  .vga 0xb8000 : {
-    vga_buffer = .;
-    . += 80 * 24 * 2;
-  }
+  /* VGA, cannot use section for this */
+  . = 0xb8000;
+  vga_buffer = .;
+  . += 80 * 24 * 2;
 
   /* Begin putting sections at 1 MiB, a conventional place for kernels to be
    *loaded at by the bootloader. */
