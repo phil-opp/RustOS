@@ -1,4 +1,4 @@
 
 [submodule "rust"]
 	path = lib/rust
-	url = https://github.com/ryanra/rust.git
+	url = https://github.com/RustOS-Fork-Holding-Ground/rust.git
