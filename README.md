@@ -1,6 +1,9 @@
 RustOS
 =====
 
+>This is just a fork of [RustOS-Fork-Holding-Ground/RustOS](https://github.com/RustOS-Fork-Holding-Ground/RustOS).
+>My own rust os is here: [phil-opp/rustos-experiment](https://github.com/phil-opp/rustos-experiment).
+
 A simple, [language-based](https://en.wikipedia.org/wiki/Language-based_system) OS.
 
 
